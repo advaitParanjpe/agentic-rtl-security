@@ -65,13 +65,18 @@ module tb_mini_soc;
 `define BUG_RO_WRITE 0
 `endif
 
+`ifndef BUG_SESSION_SECRET_BYPASS
+  `define BUG_SESSION_SECRET_BYPASS 0
+`endif
+
 mini_soc #(
 .BUG_SECRET_READ      (`BUG_SECRET_READ),
 .BUG_STALE_RDATA      (`BUG_STALE_RDATA),
 .BUG_DEBUG_UNLOCK     (`BUG_DEBUG_UNLOCK),
 .BUG_USER_DEBUG_WRITE (`BUG_USER_DEBUG_WRITE),
 .BUG_HIDDEN_ALIAS     (`BUG_HIDDEN_ALIAS),
-.BUG_RO_WRITE         (`BUG_RO_WRITE)
+.BUG_RO_WRITE              (`BUG_RO_WRITE),
+.BUG_SESSION_SECRET_BYPASS (`BUG_SESSION_SECRET_BYPASS)
     ) dut (
     .clk        (clk),
     .rst_n      (rst_n),
