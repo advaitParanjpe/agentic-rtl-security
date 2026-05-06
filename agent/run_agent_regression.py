@@ -17,13 +17,20 @@ TARGETS = [
     "hidden_alias",
 ]
 
+PROPOSAL_MODES = [
+    "policy",
+    "mock-llm",
+]
 
-def run_target(target, clean=False, max_attempts=4):
+
+def run_target(target, proposal_mode, clean=False, max_attempts=4):
     cmd = [
         sys.executable,
         str(REPO_ROOT / "agent" / "trace_agent.py"),
         "--target",
         target,
+        "--proposal-mode",
+        proposal_mode,
         "--max-attempts",
         str(max_attempts),
     ]
@@ -50,32 +57,49 @@ def main():
     print("ITERATIVE AGENT REGRESSION")
     print("=" * 80)
     print(f"Max attempts per target: {max_attempts}")
+    print(f"Proposal modes: {', '.join(PROPOSAL_MODES)}")
     print("=" * 80)
 
-    for target in TARGETS:
-        print(f"\n[BUG MODE] target={target}")
-        bug_result = run_target(target, clean=False, max_attempts=max_attempts)
-        bug_ok = bug_result.returncode == 0
+    for proposal_mode in PROPOSAL_MODES:
+        print("\n" + "#" * 80)
+        print(f"PROPOSAL MODE: {proposal_mode}")
+        print("#" * 80)
 
-        print(f"returncode={bug_result.returncode}")
-        print("status=" + ("DETECTED" if bug_ok else "MISSED"))
+        for target in TARGETS:
+            print(f"\n[BUG MODE] target={target} proposal_mode={proposal_mode}")
+            bug_result = run_target(
+                target=target,
+                proposal_mode=proposal_mode,
+                clean=False,
+                max_attempts=max_attempts,
+            )
+            bug_ok = bug_result.returncode == 0
 
-        print(f"\n[CLEAN MODE] target={target}")
-        clean_result = run_target(target, clean=True, max_attempts=max_attempts)
-        clean_ok = clean_result.returncode == 0
+            print(f"returncode={bug_result.returncode}")
+            print("status=" + ("DETECTED" if bug_ok else "MISSED"))
 
-        print(f"returncode={clean_result.returncode}")
-        print("status=" + ("PASS" if clean_ok else "UNEXPECTED_FAIL"))
+            print(f"\n[CLEAN MODE] target={target} proposal_mode={proposal_mode}")
+            clean_result = run_target(
+                target=target,
+                proposal_mode=proposal_mode,
+                clean=True,
+                max_attempts=max_attempts,
+            )
+            clean_ok = clean_result.returncode == 0
 
-        results.append(
-            {
-                "target": target,
-                "bug_detected": bug_ok,
-                "clean_passed": clean_ok,
-                "bug_returncode": bug_result.returncode,
-                "clean_returncode": clean_result.returncode,
-            }
-        )
+            print(f"returncode={clean_result.returncode}")
+            print("status=" + ("PASS" if clean_ok else "UNEXPECTED_FAIL"))
+
+            results.append(
+                {
+                    "proposal_mode": proposal_mode,
+                    "target": target,
+                    "bug_detected": bug_ok,
+                    "clean_passed": clean_ok,
+                    "bug_returncode": bug_result.returncode,
+                    "clean_returncode": clean_result.returncode,
+                }
+            )
 
     print("\n" + "=" * 80)
     print("ITERATIVE AGENT REGRESSION SUMMARY")
@@ -90,12 +114,13 @@ def main():
         status = "PASS" if ok else "FAIL"
 
         print(
-            f"{status:4} | {r['target']:20} | "
+            f"{status:4} | {r['proposal_mode']:8} | {r['target']:20} | "
             f"bug_detected={r['bug_detected']} clean_passed={r['clean_passed']}"
         )
 
     summary = {
         "max_attempts": max_attempts,
+        "proposal_modes": PROPOSAL_MODES,
         "results": results,
         "all_passed": all_ok,
     }

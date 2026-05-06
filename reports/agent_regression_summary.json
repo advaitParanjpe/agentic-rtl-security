@@ -1,7 +1,12 @@
 {
   "max_attempts": 4,
+  "proposal_modes": [
+    "policy",
+    "mock-llm"
+  ],
   "results": [
     {
+      "proposal_mode": "policy",
       "target": "secret_read",
       "bug_detected": true,
       "clean_passed": true,
@@ -9,6 +14,7 @@
       "clean_returncode": 0
     },
     {
+      "proposal_mode": "policy",
       "target": "user_debug_write",
       "bug_detected": true,
       "clean_passed": true,
@@ -16,6 +22,7 @@
       "clean_returncode": 0
     },
     {
+      "proposal_mode": "policy",
       "target": "debug_unlock",
       "bug_detected": true,
       "clean_passed": true,
@@ -23,6 +30,7 @@
       "clean_returncode": 0
     },
     {
+      "proposal_mode": "policy",
       "target": "ro_write",
       "bug_detected": true,
       "clean_passed": true,
@@ -30,6 +38,47 @@
       "clean_returncode": 0
     },
     {
+      "proposal_mode": "policy",
+      "target": "hidden_alias",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "proposal_mode": "mock-llm",
+      "target": "secret_read",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "proposal_mode": "mock-llm",
+      "target": "user_debug_write",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "proposal_mode": "mock-llm",
+      "target": "debug_unlock",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "proposal_mode": "mock-llm",
+      "target": "ro_write",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "proposal_mode": "mock-llm",
       "target": "hidden_alias",
       "bug_detected": true,
       "clean_passed": true,

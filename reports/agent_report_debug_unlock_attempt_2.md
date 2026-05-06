@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:13`
+- Timestamp: `2026-05-05T18:33:59`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_2.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
@@ -50,10 +50,10 @@ Starting mini_soc security testbench
 [TRACE 3] SECURE sets BOOT_LOCK
 [PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0
 
-[TRACE 4] SECURE attempts to modify DEBUG_CTRL after BOOT_LOCK and should be blocked
+[TRACE 4] SECURE attempts to modify DEBUG_CTRL after BOOT_LOCK
 [PASS] WRITE addr=0x0c data=0x00000000 priv=SECURE error=1
 
-[TRACE 5] USER reads DEBUG_CTRL and should see original value preserved
+[TRACE 5] USER observes that DEBUG_CTRL preserved its locked value
 [PASS] READ addr=0x0c priv=  USER rdata=0x00000001 error=0
 
 ========================================

@@ -1,6 +1,7 @@
 {
   "target": "debug_unlock",
   "mode": "clean",
+  "proposal_mode": "mock-llm",
   "max_attempts": 4,
   "bug_flag": null,
   "detected": false,

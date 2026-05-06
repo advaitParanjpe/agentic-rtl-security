@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:12`
+- Timestamp: `2026-05-05T18:33:58`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_secret_read_attempt_2.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
@@ -42,10 +42,10 @@ Starting mini_soc security testbench
 [TRACE 1] Mutation prefix: USER reads PUBLIC_DATA
 [PASS] READ addr=0x14 priv=  USER rdata=0xa5a5a5a5 error=0
 
-[TRACE 2] SECURE initializes SECRET_KEY
+[TRACE 2] SECURE writes a known value into SECRET_KEY
 [PASS] WRITE addr=0x10 data=0xdeadbeef priv=SECURE error=0
 
-[TRACE 3] USER attempts to read SECRET_KEY and should be blocked
+[TRACE 3] USER attempts to read SECRET_KEY and should be denied
 [PASS] READ addr=0x10 priv=  USER rdata=0x00000000 error=1
 
 ========================================

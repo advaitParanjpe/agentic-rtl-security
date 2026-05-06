@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:12`
+- Timestamp: `2026-05-05T18:33:58`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_user_debug_write_attempt_1.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
@@ -34,10 +34,10 @@ Starting mini_soc security testbench
 
 [TEST] Running generated trace
 
-[TRACE 0] USER attempts to enable DEBUG_CTRL and should be blocked
+[TRACE 0] USER attempts to enable DEBUG_CTRL
 [PASS] WRITE addr=0x0c data=0x00000001 priv=  USER error=1
 
-[TRACE 1] USER reads DEBUG_CTRL and should see it remains disabled
+[TRACE 1] USER checks that DEBUG_CTRL remained disabled
 [PASS] READ addr=0x0c priv=  USER rdata=0x00000000 error=0
 
 ========================================

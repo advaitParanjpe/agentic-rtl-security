@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:14`
+- Timestamp: `2026-05-05T18:34:00`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_ro_write_attempt_2.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
@@ -42,10 +42,10 @@ Starting mini_soc security testbench
 [TRACE 1] Mutation prefix: USER reads PUBLIC_DATA
 [PASS] READ addr=0x14 priv=  USER rdata=0xa5a5a5a5 error=0
 
-[TRACE 2] USER attempts to modify read-only VERSION register
+[TRACE 2] USER attempts to overwrite VERSION
 [PASS] WRITE addr=0x1c data=0xffffffff priv=  USER error=1
 
-[TRACE 3] USER reads VERSION and should see reset value preserved
+[TRACE 3] USER checks VERSION still has reset value
 [PASS] READ addr=0x1c priv=  USER rdata=0x00000001 error=0
 
 ========================================
