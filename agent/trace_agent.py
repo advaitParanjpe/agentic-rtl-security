@@ -37,6 +37,19 @@ TARGET_CONFIGS = {
         "bug_flag": "--bug-session-secret-bypass",
         "trace_target": "session_secret_bypass",
     },
+
+    "failed_auth_does_not_clear_session": {
+        "bug_flag": "--bug-failed-auth-does-not-clear-session",
+        "trace_target": "failed_auth_does_not_clear_session",
+    },
+    "boot_lock_session_persist": {
+        "bug_flag": "--bug-boot-lock-session-persist",
+        "trace_target": "boot_lock_session_persist",
+    },
+    "chal_rotate_does_not_clear_session": {
+        "bug_flag": "--bug-chal-rotate-does-not-clear-session",
+        "trace_target": "chal_rotate_does_not_clear_session",
+    },
 }
 
 
@@ -287,8 +300,6 @@ def main():
     print(f"Target:        {args.target}")
     print(f"Mode:          {'clean' if args.clean else 'bug-enabled'}")
     print(f"Max attempts:  {args.max_attempts}")
-    print(f"Bug flag:      {bug_flag if bug_flag else 'None'}")
-    print(f"Proposal mode: {args.proposal_mode}")
     if args.proposal_mode == "openai":
         print(f"Model:         {args.model}")
     print(f"Bug flag:      {bug_flag if bug_flag else 'None'}")
