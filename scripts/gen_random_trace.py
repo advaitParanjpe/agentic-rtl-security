@@ -8,7 +8,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TRACE_DIR = REPO_ROOT / "traces"
-
+AUTH_MAGIC = 0xA5A55A5A
 
 REGISTERS = {
     "STATUS": 0x00,
@@ -19,12 +19,16 @@ REGISTERS = {
     "PUBLIC_DATA": 0x14,
     "HIDDEN_DBG": 0x18,
     "VERSION": 0x1C,
+    "AUTH_CHAL": 0x20,
+    "AUTH_RESP": 0x24,
+    "SESSION_STATUS": 0x28,
+    "PROTECTED_DATA": 0x2C,
 }
 
 INVALID_ADDRS = [
-    0x20,
-    0x24,
-    0x28,
+    0x30,
+    0x34,
+    0x38,
     0x03,  # unaligned
     0x11,  # unaligned secret-ish
 ]
@@ -86,6 +90,10 @@ def expected_behavior(op, addr, priv, data=None, model=None):
         if addr == REGISTERS["BOOT_LOCK"]:
             if priv == "secure":
                 model["BOOT_LOCK"] = data
+
+                if data & 0x1:
+                    model["SESSION_STATUS"] = 0x00000000
+
                 return None, 0
             return None, 1
 
@@ -109,6 +117,31 @@ def expected_behavior(op, addr, priv, data=None, model=None):
             return None, 1
 
         if addr == REGISTERS["VERSION"]:
+            return None, 1
+        
+        if addr == REGISTERS["AUTH_CHAL"]:
+            if priv == "secure":
+                model["AUTH_CHAL"] = data
+                return None, 0
+            return None, 1
+
+        if addr == REGISTERS["AUTH_RESP"]:
+            model["AUTH_RESP"] = data
+
+            if data == (model["AUTH_CHAL"] ^ AUTH_MAGIC):
+                model["SESSION_STATUS"] = 0x00000001
+            else:
+                model["SESSION_STATUS"] = 0x00000000
+
+            return None, 0
+
+        if addr == REGISTERS["SESSION_STATUS"]:
+            return None, 1
+
+        if addr == REGISTERS["PROTECTED_DATA"]:
+            if priv == "secure":
+                model["PROTECTED_DATA"] = data
+                return None, 0
             return None, 1
 
     # -------------------------
@@ -138,6 +171,20 @@ def expected_behavior(op, addr, priv, data=None, model=None):
 
         if addr == REGISTERS["VERSION"]:
             return model["VERSION"], 0
+        
+        if addr == REGISTERS["AUTH_CHAL"]:
+            return model["AUTH_CHAL"], 0
+
+        if addr == REGISTERS["AUTH_RESP"]:
+            return 0, 1
+
+        if addr == REGISTERS["SESSION_STATUS"]:
+            return model["SESSION_STATUS"], 0
+
+        if addr == REGISTERS["PROTECTED_DATA"]:
+            if priv == "secure" or (model["SESSION_STATUS"] & 0x1):
+                return model["PROTECTED_DATA"], 0
+            return 0, 1
 
     raise RuntimeError(f"Unhandled operation: op={op}, addr=0x{addr:02X}, priv={priv}")
 
@@ -152,6 +199,10 @@ def initial_model():
         "PUBLIC_DATA": 0x00000000,
         "HIDDEN_DBG": 0xCAFE_BABE,
         "VERSION": 0x00000001,
+        "AUTH_CHAL": 0x00000000,
+        "AUTH_RESP": 0x00000000,
+        "SESSION_STATUS": 0x00000000,
+        "PROTECTED_DATA": 0xBEEF1234,
     }
 
 
