@@ -190,6 +190,15 @@ def main():
     if not trace_path.exists():
         print(f"[ERROR] Trace file does not exist: {trace_path}")
         sys.exit(1)
+    
+    run_cmd(
+    [
+        sys.executable,
+        str(REPO_ROOT / "scripts" / "validate_trace.py"),
+        str(trace_path),
+    ],
+    cwd=REPO_ROOT,
+    )
 
     generated_trace = BUILD_DIR / "generated_trace.svh"
 
