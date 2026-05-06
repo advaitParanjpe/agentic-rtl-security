@@ -109,7 +109,7 @@ MOCK_LLM_TRACES = {
     "hidden_alias": [
         {
             "op": "read",
-            "addr": "0x20",
+            "addr": "0x30",
             "priv": "user",
             "expected_rdata": "0x00000000",
             "expected_error": 1,
