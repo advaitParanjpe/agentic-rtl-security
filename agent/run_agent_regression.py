@@ -17,6 +17,9 @@ TARGETS = [
     "debug_unlock",
     "ro_write",
     "hidden_alias",
+    "failed_auth_does_not_clear_session",
+    "boot_lock_session_persist",
+    "chal_rotate_does_not_clear_session",
 ]
 
 DEFAULT_PROPOSAL_MODES = [

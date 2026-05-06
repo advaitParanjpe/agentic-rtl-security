@@ -163,6 +163,31 @@ def write_no_bug_feedback(feedback_path, attempt, sim_stdout):
     lines.append("- Add observation reads after important state changes.")
     lines.append("- Ensure expected_rdata and expected_error describe clean-design behavior.")
 
+    sim_lower = sim_stdout.lower()
+
+    if (
+        "addr=0x28" in sim_lower
+        and "rdata=0x00000001 error=0" in sim_lower
+        and "addr=0x2c" in sim_lower
+        and "error=0" in sim_lower
+    ):
+        lines.append("")
+        lines.append("Session-lifecycle feedback:")
+        lines.append("- The trace successfully established a valid session and confirmed session-gated access.")
+        lines.append("- The next trace should not only test what access is granted.")
+        lines.append("- Instead, test whether that access is revoked after a later state transition.")
+        lines.append("- A useful pattern is:")
+        lines.append("  1. establish a valid session")
+        lines.append("  2. confirm SESSION_STATUS is 1")
+        lines.append("  3. confirm PROTECTED_DATA is readable")
+        lines.append("  4. perform a revocation-related transition")
+        lines.append("  5. check that SESSION_STATUS clears")
+        lines.append("  6. check that PROTECTED_DATA is denied")
+        lines.append("- Possible revocation-related transitions include:")
+        lines.append("  - writing an incorrect AUTH_RESP")
+        lines.append("  - setting BOOT_LOCK[0]")
+        lines.append("  - writing a new AUTH_CHAL value")
+
     feedback_path.write_text("\n".join(lines), encoding="utf-8")
 
 
