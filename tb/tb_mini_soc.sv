@@ -228,38 +228,21 @@ mini_soc #(
     apply_reset();
 
     // ----------------------------------------------------------
-// Test 1: normal public register write/read
-// ----------------------------------------------------------
+    // Test 1: normal public register write/read sanity check
+    // ----------------------------------------------------------
 
-$display("\n[TEST] Public register access should work");
+    $display("\n[TEST] Public register access should work");
 
-mmio_write(ADDR_PUBLIC_DATA, 32'h1234_ABCD, PRIV_USER, 1'b0);
+    mmio_write(ADDR_PUBLIC_DATA, 32'h1234_ABCD, PRIV_USER, 1'b0);
+    mmio_read(ADDR_PUBLIC_DATA, PRIV_USER, 32'h1234_ABCD, 1'b0);
 
-mmio_read(ADDR_PUBLIC_DATA, PRIV_USER, 32'h1234_ABCD, 1'b0);
+    // ----------------------------------------------------------
+    // Test 2: generated trace
+    // ----------------------------------------------------------
 
-// ----------------------------------------------------------
-// Test 2: secure write to SECRET_KEY should work
-// ----------------------------------------------------------
+    $display("\n[TEST] Running generated trace");
 
-$display("\n[TEST] Secure write to SECRET_KEY should work");
-
-mmio_write(ADDR_SECRET_KEY, 32'hDEAD_BEEF, PRIV_SECURE, 1'b0);
-
-// ----------------------------------------------------------
-// Test 3: user read from SECRET_KEY should be blocked
-// ----------------------------------------------------------
-
-$display("\n[TEST] User read from SECRET_KEY should be blocked");
-
-mmio_read(ADDR_SECRET_KEY, PRIV_USER, 32'h0000_0000, 1'b1);
-
-// ----------------------------------------------------------
-// Test 4: secure read from SECRET_KEY should also be blocked
-// ----------------------------------------------------------
-
-$display("\n[TEST] Secure read from SECRET_KEY should also be blocked");
-
-mmio_read(ADDR_SECRET_KEY, PRIV_SECURE, 32'h0000_0000, 1'b1);
+    `include "../build/generated_trace.svh"
 
     // ----------------------------------------------------------
     // Final result
