@@ -30,6 +30,8 @@ Current observed results:
 | `BUG_USER_DEBUG_WRITE` | 100 | 20 | 16 | 4 | 80% |
 | `BUG_DEBUG_UNLOCK` | 50 | 20 | 3 | 17 | 15% |
 | `BUG_DEBUG_UNLOCK` | 1000 | 20 | 20 | 0 | 100% |
+| `BUG_SESSION_SECRET_BYPASS` | 100 | 20 | 0 | 20 | 0% |
+| `BUG_SESSION_SECRET_BYPASS` | 1000 | 20 | 0 | 20 | 0% |
 
 ## Interpretation
 
@@ -43,6 +45,10 @@ However, sequence-dependent bugs are much harder. `BUG_DEBUG_UNLOCK` only reache
 4. Observe that the state changed or that the write was incorrectly accepted.
 
 This motivates a more guided trace-generation approach.
+
+`BUG_SESSION_SECRET_BYPASS` was not detected by random fuzzing in either 100-operation or 1000-operation traces across 20 seeds. This is expected because detection requires a semantically meaningful sequence: initialize or observe `AUTH_CHAL`, compute `AUTH_RESP = AUTH_CHAL ^ 0xA5A55A5A`, establish a valid session, and then attempt a forbidden USER read from `SECRET_KEY`.
+
+The OpenAI-guided agent generated this sequence directly in one attempt, including a correct authentication response and a final policy-violating secret read. This is the strongest evidence so far that policy/LLM-guided trace generation can outperform unguided random fuzzing on ordered security properties.
 
 ## Policy-Guided Agent Results
 
