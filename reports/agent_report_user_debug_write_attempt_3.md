@@ -1,7 +1,7 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:13`
-- Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_3.json`
+- Timestamp: `2026-05-05T18:25:12`
+- Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_user_debug_write_attempt_3.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
 - Result: **PASS**
@@ -20,10 +20,8 @@ The simulation completed without detecting a policy violation.
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
 - `[PASS] READ addr=0x20 priv=  USER rdata=0x00000000 error=1`
 - `[PASS] WRITE addr=0x24 data=0x11111111 priv=SECURE error=1`
-- `[PASS] WRITE addr=0x0c data=0x00000001 priv=SECURE error=0`
-- `[PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0`
-- `[PASS] WRITE addr=0x0c data=0x00000000 priv=SECURE error=1`
-- `[PASS] READ addr=0x0c priv=  USER rdata=0x00000001 error=0`
+- `[PASS] WRITE addr=0x0c data=0x00000001 priv=  USER error=1`
+- `[PASS] READ addr=0x0c priv=  USER rdata=0x00000000 error=0`
 
 ## Raw Simulation Log
 
@@ -44,22 +42,16 @@ Starting mini_soc security testbench
 [TRACE 1] Mutation prefix: SECURE writes invalid address
 [PASS] WRITE addr=0x24 data=0x11111111 priv=SECURE error=1
 
-[TRACE 2] SECURE enables DEBUG_CTRL before BOOT_LOCK
-[PASS] WRITE addr=0x0c data=0x00000001 priv=SECURE error=0
+[TRACE 2] USER attempts to enable DEBUG_CTRL and should be blocked
+[PASS] WRITE addr=0x0c data=0x00000001 priv=  USER error=1
 
-[TRACE 3] SECURE sets BOOT_LOCK
-[PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0
-
-[TRACE 4] SECURE attempts to modify DEBUG_CTRL after BOOT_LOCK and should be blocked
-[PASS] WRITE addr=0x0c data=0x00000000 priv=SECURE error=1
-
-[TRACE 5] USER reads DEBUG_CTRL and should see original value preserved
-[PASS] READ addr=0x0c priv=  USER rdata=0x00000001 error=0
+[TRACE 3] USER reads DEBUG_CTRL and should see it remains disabled
+[PASS] READ addr=0x0c priv=  USER rdata=0x00000000 error=0
 
 ========================================
-Test summary: 8 checks, 0 failures
+Test summary: 6 checks, 0 failures
 ========================================
 RESULT: PASS
-/Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 240000 (1ps)
+/Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 200000 (1ps)
 
 ```

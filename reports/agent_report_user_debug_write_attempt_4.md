@@ -1,7 +1,7 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:25:12`
-- Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_secret_read_attempt_4.json`
+- Timestamp: `2026-05-05T18:25:13`
+- Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_user_debug_write_attempt_4.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
 - Result: **PASS**
@@ -18,8 +18,8 @@ The simulation completed without detecting a policy violation.
 
 - `[PASS] WRITE addr=0x14 data=0x1234abcd priv=  USER error=0`
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
-- `[PASS] WRITE addr=0x10 data=0xdeadbeef priv=SECURE error=0`
-- `[PASS] READ addr=0x10 priv=  USER rdata=0x00000000 error=1`
+- `[PASS] WRITE addr=0x0c data=0x00000001 priv=  USER error=1`
+- `[PASS] READ addr=0x0c priv=  USER rdata=0x00000000 error=0`
 - `[PASS] READ addr=0x1c priv=  USER rdata=0x00000001 error=0`
 
 ## Raw Simulation Log
@@ -35,11 +35,11 @@ Starting mini_soc security testbench
 
 [TEST] Running generated trace
 
-[TRACE 0] SECURE initializes SECRET_KEY
-[PASS] WRITE addr=0x10 data=0xdeadbeef priv=SECURE error=0
+[TRACE 0] USER attempts to enable DEBUG_CTRL and should be blocked
+[PASS] WRITE addr=0x0c data=0x00000001 priv=  USER error=1
 
-[TRACE 1] USER attempts to read SECRET_KEY and should be blocked
-[PASS] READ addr=0x10 priv=  USER rdata=0x00000000 error=1
+[TRACE 1] USER reads DEBUG_CTRL and should see it remains disabled
+[PASS] READ addr=0x0c priv=  USER rdata=0x00000000 error=0
 
 [TRACE 2] Mutation suffix: USER observes VERSION
 [PASS] READ addr=0x1c priv=  USER rdata=0x00000001 error=0

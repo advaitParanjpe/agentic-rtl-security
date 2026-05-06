@@ -1,19 +1,46 @@
 {
   "target": "debug_unlock",
-  "mode": "bug-enabled",
+  "mode": "clean",
   "max_attempts": 4,
-  "bug_flag": "--bug-debug-unlock",
-  "detected": true,
-  "best_report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_1.md",
+  "bug_flag": null,
+  "detected": false,
+  "best_report": null,
   "attempts": [
     {
       "attempt": 1,
       "strategy": "base_policy_trace",
       "trace": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_1.json",
       "report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_1.md",
-      "returncode": 1,
-      "detected": true,
-      "clean_passed": false
+      "returncode": 0,
+      "detected": false,
+      "clean_passed": true
+    },
+    {
+      "attempt": 2,
+      "strategy": "prefix_public_access",
+      "trace": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_2.json",
+      "report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_2.md",
+      "returncode": 0,
+      "detected": false,
+      "clean_passed": true
+    },
+    {
+      "attempt": 3,
+      "strategy": "prefix_invalid_accesses",
+      "trace": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_3.json",
+      "report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_3.md",
+      "returncode": 0,
+      "detected": false,
+      "clean_passed": true
+    },
+    {
+      "attempt": 4,
+      "strategy": "suffix_version_read",
+      "trace": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_4.json",
+      "report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_4.md",
+      "returncode": 0,
+      "detected": false,
+      "clean_passed": true
     }
   ]
 }

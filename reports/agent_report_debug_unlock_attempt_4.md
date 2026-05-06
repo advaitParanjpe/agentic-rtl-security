@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:23:41`
+- Timestamp: `2026-05-05T18:25:13`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_4.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`

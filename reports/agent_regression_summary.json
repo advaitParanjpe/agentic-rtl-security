@@ -1,0 +1,41 @@
+{
+  "max_attempts": 4,
+  "results": [
+    {
+      "target": "secret_read",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "target": "user_debug_write",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "target": "debug_unlock",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "target": "ro_write",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    },
+    {
+      "target": "hidden_alias",
+      "bug_detected": true,
+      "clean_passed": true,
+      "bug_returncode": 0,
+      "clean_returncode": 0
+    }
+  ],
+  "all_passed": true
+}
