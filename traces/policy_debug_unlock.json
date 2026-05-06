@@ -1,0 +1,34 @@
+[
+  {
+    "op": "write",
+    "addr": "0x0C",
+    "data": "0x00000001",
+    "priv": "secure",
+    "expected_error": 0,
+    "comment": "SECURE enables DEBUG_CTRL before BOOT_LOCK"
+  },
+  {
+    "op": "write",
+    "addr": "0x08",
+    "data": "0x00000001",
+    "priv": "secure",
+    "expected_error": 0,
+    "comment": "SECURE sets BOOT_LOCK"
+  },
+  {
+    "op": "write",
+    "addr": "0x0C",
+    "data": "0x00000000",
+    "priv": "secure",
+    "expected_error": 1,
+    "comment": "SECURE attempts to modify DEBUG_CTRL after BOOT_LOCK and should be blocked"
+  },
+  {
+    "op": "read",
+    "addr": "0x0C",
+    "priv": "user",
+    "expected_rdata": "0x00000001",
+    "expected_error": 0,
+    "comment": "USER reads DEBUG_CTRL and should see original value preserved"
+  }
+]

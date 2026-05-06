@@ -1,0 +1,18 @@
+[
+  {
+    "op": "write",
+    "addr": "0x1C",
+    "data": "0xFFFFFFFF",
+    "priv": "user",
+    "expected_error": 1,
+    "comment": "USER attempts to modify read-only VERSION register"
+  },
+  {
+    "op": "read",
+    "addr": "0x1C",
+    "priv": "user",
+    "expected_rdata": "0x00000001",
+    "expected_error": 0,
+    "comment": "USER reads VERSION and should see reset value preserved"
+  }
+]

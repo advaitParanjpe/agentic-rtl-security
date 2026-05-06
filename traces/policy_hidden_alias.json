@@ -1,0 +1,10 @@
+[
+  {
+    "op": "read",
+    "addr": "0x20",
+    "priv": "user",
+    "expected_rdata": "0x00000000",
+    "expected_error": 1,
+    "comment": "USER reads invalid alias address and should not observe hidden debug state"
+  }
+]
