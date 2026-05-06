@@ -22,3 +22,13 @@ venv/
 
 # Traces
 traces/random_trace.json
+
+# Generated agent/simulation reports
+reports/agent_report_*.md
+reports/agent_summary_*.json
+reports/agent_regression_summary.json
+reports/openai_*.md
+reports/mock_llm_*.md
+reports/manual_llm_*.md
+reports/vuln_*.md
+reports/clean_*.md
