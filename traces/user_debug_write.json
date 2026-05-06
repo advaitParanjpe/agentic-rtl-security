@@ -1,0 +1,18 @@
+[
+    {
+      "op": "write",
+      "addr": "0x0C",
+      "data": "0x00000001",
+      "priv": "user",
+      "expected_error": 1,
+      "comment": "USER tries to enable DEBUG_CTRL and should be blocked"
+    },
+    {
+      "op": "read",
+      "addr": "0x0C",
+      "priv": "user",
+      "expected_rdata": "0x00000000",
+      "expected_error": 0,
+      "comment": "USER reads DEBUG_CTRL and should see it is still disabled"
+    }
+  ]
