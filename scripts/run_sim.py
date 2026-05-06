@@ -4,7 +4,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-
+import datetime
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILD_DIR = REPO_ROOT / "build"
@@ -100,8 +100,82 @@ def parse_args():
         help="Enable BUG_RO_WRITE.",
     )
 
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=None,
+        help="Optional Markdown report path for simulation result.",
+    )
+
     return parser.parse_args()
 
+def write_report(report_path, trace_path, active_bugs, sim_stdout, sim_exit_code):
+    if not report_path.is_absolute():
+        report_path = REPO_ROOT / report_path
+
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+
+    result = "FAIL" if "RESULT: FAIL" in sim_stdout else "PASS"
+
+    fail_lines = [
+        line for line in sim_stdout.splitlines()
+        if "[FAIL]" in line
+    ]
+
+    pass_lines = [
+        line for line in sim_stdout.splitlines()
+        if "[PASS]" in line
+    ]
+
+    timestamp = datetime.datetime.now().isoformat(timespec="seconds")
+
+    bug_text = ", ".join(active_bugs) if active_bugs else "None"
+
+    lines = []
+    lines.append("# Simulation Vulnerability Report")
+    lines.append("")
+    lines.append(f"- Timestamp: `{timestamp}`")
+    lines.append(f"- Trace: `{trace_path}`")
+    lines.append(f"- Active bug defines: `{bug_text}`")
+    lines.append(f"- Simulation exit code: `{sim_exit_code}`")
+    lines.append(f"- Result: **{result}**")
+    lines.append("")
+    lines.append("## Summary")
+    lines.append("")
+
+    if result == "FAIL":
+        lines.append("The simulation detected one or more policy violations.")
+    else:
+        lines.append("The simulation completed without detecting a policy violation.")
+
+    lines.append("")
+    lines.append("## Failing Checks")
+    lines.append("")
+
+    if fail_lines:
+        for line in fail_lines:
+            lines.append(f"- `{line}`")
+    else:
+        lines.append("- None")
+
+    lines.append("")
+    lines.append("## Passing Checks")
+    lines.append("")
+
+    for line in pass_lines:
+        lines.append(f"- `{line}`")
+
+    lines.append("")
+    lines.append("## Raw Simulation Log")
+    lines.append("")
+    lines.append("```text")
+    lines.append(sim_stdout)
+    lines.append("```")
+    lines.append("")
+
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+
+    print(f"[DONE] Wrote report to {report_path}")
 
 def main():
     args = parse_args()
@@ -166,16 +240,28 @@ def main():
 
     sim_result = run_cmd(["vvp", str(sim_out)], cwd=REPO_ROOT, allow_fail=True)
 
+    sim_exit_code = 2
+
     if "RESULT: FAIL" in sim_result.stdout:
         print("[DONE] Simulation completed with test failures.")
-        sys.exit(1)
-
-    if "RESULT: PASS" in sim_result.stdout:
+        sim_exit_code = 1
+    elif "RESULT: PASS" in sim_result.stdout:
         print("[DONE] Simulation completed successfully.")
-        sys.exit(0)
+        sim_exit_code = 0
+    else:
+        print("[WARN] Simulation completed, but no RESULT line was found.")
+        sim_exit_code = 2
 
-    print("[WARN] Simulation completed, but no RESULT line was found.")
-    sys.exit(2)
+    if args.report is not None:
+        write_report(
+            report_path=args.report,
+            trace_path=trace_path,
+            active_bugs=active_bugs,
+            sim_stdout=sim_result.stdout,
+            sim_exit_code=sim_exit_code,
+        )
+
+    sys.exit(sim_exit_code)
 
 
 if __name__ == "__main__":
