@@ -1,0 +1,58 @@
+[
+    {
+      "op": "write",
+      "addr": "0x20",
+      "data": "0x12345678",
+      "priv": "secure",
+      "expected_error": 0,
+      "comment": "SECURE initializes AUTH_CHAL"
+    },
+    {
+      "op": "write",
+      "addr": "0x24",
+      "data": "0xB7910C22",
+      "priv": "user",
+      "expected_error": 0,
+      "comment": "USER writes correct AUTH_RESP to establish session"
+    },
+    {
+      "op": "read",
+      "addr": "0x28",
+      "priv": "user",
+      "expected_rdata": "0x00000001",
+      "expected_error": 0,
+      "comment": "USER confirms session is valid"
+    },
+    {
+      "op": "read",
+      "addr": "0x2C",
+      "priv": "user",
+      "expected_rdata": "0xBEEF1234",
+      "expected_error": 0,
+      "comment": "USER confirms PROTECTED_DATA is readable while session is valid"
+    },
+    {
+      "op": "write",
+      "addr": "0x24",
+      "data": "0x00000000",
+      "priv": "user",
+      "expected_error": 0,
+      "comment": "USER writes incorrect AUTH_RESP, which should clear the session"
+    },
+    {
+      "op": "read",
+      "addr": "0x28",
+      "priv": "user",
+      "expected_rdata": "0x00000000",
+      "expected_error": 0,
+      "comment": "USER confirms session was cleared after failed auth"
+    },
+    {
+      "op": "read",
+      "addr": "0x2C",
+      "priv": "user",
+      "expected_rdata": "0x00000000",
+      "expected_error": 1,
+      "comment": "USER should no longer read PROTECTED_DATA after failed auth"
+    }
+  ]

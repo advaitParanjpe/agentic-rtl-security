@@ -30,6 +30,7 @@ BUG_DEFINES = {
     "bug_hidden_alias": "BUG_HIDDEN_ALIAS",
     "bug_ro_write": "BUG_RO_WRITE",
     "bug_session_secret_bypass": "BUG_SESSION_SECRET_BYPASS",
+    "bug_failed_auth_does_not_clear_session": "BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION",
 }
 
 
@@ -112,6 +113,12 @@ def parse_args():
         "--bug-session-secret-bypass",
         action="store_true",
         help="Enable BUG_SESSION_SECRET_BYPASS.",
+    )
+
+    parser.add_argument(
+        "--bug-failed-auth-does-not-clear-session",
+        action="store_true",
+        help="Enable BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION.",
     )
 
     return parser.parse_args()

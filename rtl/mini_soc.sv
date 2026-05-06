@@ -4,13 +4,14 @@
 `include "soc_pkg.sv"
 
 module mini_soc #(
-  parameter bit BUG_SECRET_READ           = 1'b0,
-  parameter bit BUG_STALE_RDATA           = 1'b0,
-  parameter bit BUG_DEBUG_UNLOCK          = 1'b0,
-  parameter bit BUG_USER_DEBUG_WRITE      = 1'b0,
-  parameter bit BUG_HIDDEN_ALIAS          = 1'b0,
-  parameter bit BUG_RO_WRITE              = 1'b0,
-  parameter bit BUG_SESSION_SECRET_BYPASS = 1'b0
+  parameter bit BUG_SECRET_READ                       = 1'b0,
+  parameter bit BUG_STALE_RDATA                       = 1'b0,
+  parameter bit BUG_DEBUG_UNLOCK                      = 1'b0,
+  parameter bit BUG_USER_DEBUG_WRITE                  = 1'b0,
+  parameter bit BUG_HIDDEN_ALIAS                      = 1'b0,
+  parameter bit BUG_RO_WRITE                          = 1'b0,
+  parameter bit BUG_SESSION_SECRET_BYPASS             = 1'b0,
+  parameter bit BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION = 1'b0
 )(
   input  logic                         clk,
   input  logic                         rst_n,
@@ -199,7 +200,15 @@ module mini_soc #(
               if (wdata == (auth_chal_q ^ AUTH_MAGIC)) begin
                 session_status_q <= 32'h0000_0001;
               end else begin
-                session_status_q <= 32'h0000_0000;
+                // Clean behavior: incorrect auth response clears the session.
+                // Buggy behavior: once a session is valid, incorrect auth does
+                // not clear it.
+                if (BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION &&
+                    session_status_q[0]) begin
+                  session_status_q <= session_status_q;
+                end else begin
+                  session_status_q <= 32'h0000_0000;
+                end
               end
 
               error <= 1'b0;
