@@ -11,6 +11,7 @@ BUILD_DIR = REPO_ROOT / "build"
 
 RTL_DIR = REPO_ROOT / "rtl"
 TB_DIR = REPO_ROOT / "tb"
+TRACE_DIR = REPO_ROOT / "traces"
 
 TOP_TB = "tb_mini_soc"
 
@@ -53,7 +54,14 @@ def run_cmd(cmd, cwd=None, allow_fail=False):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Compile and run the mini_soc SystemVerilog testbench."
+        description="Generate trace, compile, and run the mini_soc SystemVerilog testbench."
+    )
+
+    parser.add_argument(
+        "--trace",
+        type=Path,
+        default=TRACE_DIR / "manual_secret_read.json",
+        help="Path to JSON trace file.",
     )
 
     parser.add_argument(
@@ -100,6 +108,28 @@ def main():
 
     BUILD_DIR.mkdir(exist_ok=True)
 
+    trace_path = args.trace
+
+    if not trace_path.is_absolute():
+        trace_path = REPO_ROOT / trace_path
+
+    if not trace_path.exists():
+        print(f"[ERROR] Trace file does not exist: {trace_path}")
+        sys.exit(1)
+
+    generated_trace = BUILD_DIR / "generated_trace.svh"
+
+    run_cmd(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts" / "gen_trace.py"),
+            str(trace_path),
+            "--out",
+            str(generated_trace),
+        ],
+        cwd=REPO_ROOT,
+    )
+
     active_bugs = [
         define_name
         for arg_name, define_name in BUG_DEFINES.items()
@@ -132,7 +162,7 @@ def main():
 
     compile_cmd += [str(src) for src in SOURCES]
 
-    compile_result = run_cmd(compile_cmd, cwd=REPO_ROOT)
+    run_cmd(compile_cmd, cwd=REPO_ROOT)
 
     sim_result = run_cmd(["vvp", str(sim_out)], cwd=REPO_ROOT, allow_fail=True)
 
