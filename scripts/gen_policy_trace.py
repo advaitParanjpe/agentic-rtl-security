@@ -171,6 +171,183 @@ TRACE_TEMPLATES = {
             "comment": "USER attempts to read SECRET_KEY despite valid session and should be blocked"
         }
     ],
+
+    "failed_auth_does_not_clear_session": [
+        {
+            "op": "write",
+            "addr": "0x20",
+            "data": "0x12345678",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE initializes AUTH_CHAL"
+        },
+        {
+            "op": "write",
+            "addr": "0x24",
+            "data": "0xB7910C22",
+            "priv": "user",
+            "expected_error": 0,
+            "comment": "USER writes correct AUTH_RESP to establish session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000001",
+            "expected_error": 0,
+            "comment": "USER confirms session is valid"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0xBEEF1234",
+            "expected_error": 0,
+            "comment": "USER confirms PROTECTED_DATA is readable while session is valid"
+        },
+        {
+            "op": "write",
+            "addr": "0x24",
+            "data": "0x00000000",
+            "priv": "user",
+            "expected_error": 0,
+            "comment": "USER writes incorrect AUTH_RESP, which should clear the session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 0,
+            "comment": "USER confirms session was cleared after failed auth"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 1,
+            "comment": "USER should no longer read PROTECTED_DATA after failed auth"
+        }
+    ],
+
+    "boot_lock_session_persist": [
+        {
+            "op": "write",
+            "addr": "0x20",
+            "data": "0x12345678",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE initializes AUTH_CHAL"
+        },
+        {
+            "op": "write",
+            "addr": "0x24",
+            "data": "0xB7910C22",
+            "priv": "user",
+            "expected_error": 0,
+            "comment": "USER writes correct AUTH_RESP to establish session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000001",
+            "expected_error": 0,
+            "comment": "USER confirms session is valid"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0xBEEF1234",
+            "expected_error": 0,
+            "comment": "USER confirms PROTECTED_DATA is readable while session is valid"
+        },
+        {
+            "op": "write",
+            "addr": "0x08",
+            "data": "0x00000001",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE sets BOOT_LOCK, which should clear active session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 0,
+            "comment": "USER confirms session was cleared by BOOT_LOCK"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 1,
+            "comment": "USER should no longer read PROTECTED_DATA after BOOT_LOCK clears session"
+        }
+    ],
+
+        "chal_rotate_does_not_clear_session": [
+        {
+            "op": "write",
+            "addr": "0x20",
+            "data": "0x12345678",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE initializes AUTH_CHAL"
+        },
+        {
+            "op": "write",
+            "addr": "0x24",
+            "data": "0xB7910C22",
+            "priv": "user",
+            "expected_error": 0,
+            "comment": "USER writes correct AUTH_RESP to establish session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000001",
+            "expected_error": 0,
+            "comment": "USER confirms session is valid"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0xBEEF1234",
+            "expected_error": 0,
+            "comment": "USER confirms PROTECTED_DATA is readable while session is valid"
+        },
+        {
+            "op": "write",
+            "addr": "0x20",
+            "data": "0xAABBCCDD",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE rotates AUTH_CHAL, which should invalidate the existing session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 0,
+            "comment": "USER confirms session was cleared after AUTH_CHAL rotation"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 1,
+            "comment": "USER should no longer read PROTECTED_DATA after challenge rotation clears session"
+        }
+    ],
 }
 
 
