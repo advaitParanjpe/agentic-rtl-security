@@ -29,6 +29,7 @@ BUG_DEFINES = {
     "bug_user_debug_write": "BUG_USER_DEBUG_WRITE",
     "bug_hidden_alias": "BUG_HIDDEN_ALIAS",
     "bug_ro_write": "BUG_RO_WRITE",
+    "bug_session_secret_bypass": "BUG_SESSION_SECRET_BYPASS",
 }
 
 
@@ -105,6 +106,12 @@ def parse_args():
         type=Path,
         default=None,
         help="Optional Markdown report path for simulation result.",
+    )
+
+    parser.add_argument(
+        "--bug-session-secret-bypass",
+        action="store_true",
+        help="Enable BUG_SESSION_SECRET_BYPASS.",
     )
 
     return parser.parse_args()
