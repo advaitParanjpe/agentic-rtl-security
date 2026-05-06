@@ -194,6 +194,14 @@ def run_sim(trace_path, report_path, bug_flag=None):
 
     return run_cmd(cmd, allow_fail=True, quiet=True)
 
+def validate_trace(trace_path):
+    cmd = [
+        sys.executable,
+        str(REPO_ROOT / "scripts" / "validate_trace.py"),
+        str(trace_path),
+    ]
+
+    return run_cmd(cmd, allow_fail=True, quiet=True)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -284,6 +292,32 @@ def main():
         print(f"[TRACE] {trace_path}")
         print(f"[REPORT] {report_path}")
 
+        validation_result = validate_trace(trace_path)
+
+        if validation_result.returncode != 0:
+            print("[RESULT] Trace validation failed. Skipping simulation.")
+
+            if args.verbose:
+                print(validation_result.stdout)
+
+            attempt_results.append(
+                {
+                    "attempt": attempt,
+                    "strategy": strategy,
+                    "trace": str(trace_path),
+                    "report": str(report_path),
+                    "validation_returncode": validation_result.returncode,
+                    "valid_trace": False,
+                    "returncode": None,
+                    "detected": False,
+                    "clean_passed": False,
+                }
+            )
+
+            continue
+
+        print("[RESULT] Trace validation passed.")
+
         sim_result = run_sim(
             trace_path=trace_path,
             report_path=report_path,
@@ -297,15 +331,17 @@ def main():
         attempt_clean_passed = sim_result.returncode == 0
 
         attempt_results.append(
-            {
-                "attempt": attempt,
-                "strategy": strategy,
-                "trace": str(trace_path),
-                "report": str(report_path),
-                "returncode": sim_result.returncode,
-                "detected": attempt_detected,
-                "clean_passed": attempt_clean_passed,
-            }
+        {
+            "attempt": attempt,
+            "strategy": strategy,
+            "trace": str(trace_path),
+            "report": str(report_path),
+            "validation_returncode": validation_result.returncode,
+            "valid_trace": True,
+            "returncode": sim_result.returncode,
+            "detected": attempt_detected,
+            "clean_passed": attempt_clean_passed,
+        }
         )
 
         if args.clean:
