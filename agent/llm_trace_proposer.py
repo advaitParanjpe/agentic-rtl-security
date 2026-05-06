@@ -3,6 +3,9 @@
 import argparse
 import json
 from pathlib import Path
+import os
+import re
+from openai import OpenAI
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -128,31 +131,84 @@ def render_prompt(target):
         .replace("{{REGISTER_MAP}}", register_map)
     )
 
+def extract_json_array(text):
+    text = text.strip()
+
+    if text.startswith("[") and text.endswith("]"):
+        return text
+
+    match = re.search(r"\[[\s\S]*\]", text)
+    if not match:
+        raise ValueError("Could not find a JSON array in model output")
+
+    return match.group(0)
+
+
+def call_openai_for_trace(target, model):
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise EnvironmentError("OPENAI_API_KEY is not set")
+
+    client = OpenAI()
+    prompt = render_prompt(target)
+
+    response = client.responses.create(
+        model=model,
+        input=[
+            {
+                "role": "system",
+                "content": (
+                    "You generate strict JSON MMIO traces for RTL security testing. "
+                    "Return only a JSON array. Do not include Markdown fences."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+    )
+
+    raw_text = response.output_text
+    json_text = extract_json_array(raw_text)
+    return json.loads(json_text)
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Mock LLM trace proposer for MMIO security traces."
+        description="LLM trace proposer for MMIO security traces."
     )
 
     parser.add_argument(
         "--target",
         choices=MOCK_LLM_TRACES.keys(),
         required=True,
-        help="Target security property / bug class."
+        help="Target security property / bug class.",
     )
 
     parser.add_argument(
         "--out",
         type=Path,
         required=True,
-        help="Output JSON trace path."
+        help="Output JSON trace path.",
     )
 
     parser.add_argument(
         "--prompt-out",
         type=Path,
         default=None,
-        help="Optional path to save the rendered prompt."
+        help="Optional path to save the rendered prompt.",
+    )
+
+    parser.add_argument(
+        "--mode",
+        choices=["mock", "openai"],
+        default="mock",
+        help="Trace proposal mode. 'mock' uses built-in traces; 'openai' calls the OpenAI API.",
+    )
+
+    parser.add_argument(
+        "--model",
+        default="gpt-5.4-mini",
+        help="Model to use for --mode openai.",
     )
 
     args = parser.parse_args()
@@ -163,7 +219,17 @@ def main():
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    trace = MOCK_LLM_TRACES[args.target]
+    if args.mode == "mock":
+        trace = MOCK_LLM_TRACES[args.target]
+
+    elif args.mode == "openai":
+        trace = call_openai_for_trace(
+            target=args.target,
+            model=args.model,
+        )
+
+    else:
+        raise ValueError(f"Unknown mode: {args.mode}")
 
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(trace, f, indent=2)
@@ -178,8 +244,9 @@ def main():
 
         print(f"[DONE] Wrote rendered prompt to {prompt_path}")
 
-    print(f"[DONE] Wrote mock LLM trace to {out_path}")
+    print(f"[DONE] Wrote {args.mode} LLM trace to {out_path}")
     print(f"[INFO] target={args.target}")
+    print(f"[INFO] mode={args.mode}")
 
 
 if __name__ == "__main__":
