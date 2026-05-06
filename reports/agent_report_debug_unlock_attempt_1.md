@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:40:34`
+- Timestamp: `2026-05-05T19:56:35`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_1.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`
@@ -18,10 +18,10 @@ The simulation completed without detecting a policy violation.
 
 - `[PASS] WRITE addr=0x14 data=0x1234abcd priv=  USER error=0`
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
-- `[PASS] WRITE addr=0x0c data=0x00000001 priv=SECURE error=0`
 - `[PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0`
-- `[PASS] WRITE addr=0x0c data=0x00000000 priv=SECURE error=1`
-- `[PASS] READ addr=0x0c priv=  USER rdata=0x00000001 error=0`
+- `[PASS] WRITE addr=0x0c data=0xa5a5a5a5 priv=SECURE error=1`
+- `[PASS] WRITE addr=0x0c data=0x5a5a5a5a priv=  USER error=1`
+- `[PASS] READ addr=0x0c priv=SECURE rdata=0x00000000 error=0`
 
 ## Raw Simulation Log
 
@@ -36,17 +36,17 @@ Starting mini_soc security testbench
 
 [TEST] Running generated trace
 
-[TRACE 0] SECURE enables DEBUG_CTRL before BOOT_LOCK
-[PASS] WRITE addr=0x0c data=0x00000001 priv=SECURE error=0
-
-[TRACE 1] SECURE sets BOOT_LOCK
+[TRACE 0] Set BOOT_LOCK[0] to 1 from secure mode to establish the condition where later DEBUG_CTRL writes must be blocked.
 [PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0
 
-[TRACE 2] SECURE attempts to modify DEBUG_CTRL after BOOT_LOCK
-[PASS] WRITE addr=0x0c data=0x00000000 priv=SECURE error=1
+[TRACE 1] Attempt to modify DEBUG_CTRL after boot lock is set; clean behavior must deny the write and leave DEBUG_CTRL unchanged.
+[PASS] WRITE addr=0x0c data=0xa5a5a5a5 priv=SECURE error=1
 
-[TRACE 3] USER observes that DEBUG_CTRL preserved its locked value
-[PASS] READ addr=0x0c priv=  USER rdata=0x00000001 error=0
+[TRACE 2] USER mode must never be able to enable or alter DEBUG_CTRL, so this write should be rejected.
+[PASS] WRITE addr=0x0c data=0x5a5a5a5a priv=  USER error=1
+
+[TRACE 3] Verify that DEBUG_CTRL remains at reset value after the denied writes.
+[PASS] READ addr=0x0c priv=SECURE rdata=0x00000000 error=0
 
 ========================================
 Test summary: 6 checks, 0 failures

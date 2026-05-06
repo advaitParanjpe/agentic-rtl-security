@@ -100,6 +100,27 @@ def generate_mock_llm_trace(target, out_path):
         quiet=True,
     )
 
+def generate_openai_trace(target, out_path, model):
+    prompt_out = BUILD_DIR / f"openai_prompt_{target}.md"
+
+    run_cmd(
+        [
+            sys.executable,
+            str(REPO_ROOT / "agent" / "llm_trace_proposer.py"),
+            "--target",
+            target,
+            "--mode",
+            "openai",
+            "--model",
+            model,
+            "--out",
+            str(out_path),
+            "--prompt-out",
+            str(prompt_out),
+        ],
+        quiet=True,
+    )
+
 def mutate_trace(base_trace, attempt):
     """
     Generate small deterministic variants of the base trace.
@@ -236,9 +257,15 @@ def main():
 
     parser.add_argument(
         "--proposal-mode",
-        choices=["policy", "mock-llm"],
+        choices=["policy", "mock-llm", "openai"],
         default="policy",
         help="Trace proposal backend to use.",
+    )
+
+    parser.add_argument(
+        "--model",
+        default="gpt-5.4-mini",
+        help="Model to use when --proposal-mode openai.",
     )
 
     args = parser.parse_args()
@@ -258,6 +285,10 @@ def main():
     print(f"Max attempts:  {args.max_attempts}")
     print(f"Bug flag:      {bug_flag if bug_flag else 'None'}")
     print(f"Proposal mode: {args.proposal_mode}")
+    if args.proposal_mode == "openai":
+        print(f"Model:         {args.model}")
+    print(f"Bug flag:      {bug_flag if bug_flag else 'None'}")
+    print(f"Proposal mode: {args.proposal_mode}")
     print("=" * 80)
 
     # Step 1: generate the base candidate trace.
@@ -266,11 +297,20 @@ def main():
             target=config["trace_target"],
             out_path=base_trace_path,
         )
+
     elif args.proposal_mode == "mock-llm":
         generate_mock_llm_trace(
             target=config["trace_target"],
             out_path=base_trace_path,
         )
+
+    elif args.proposal_mode == "openai":
+        generate_openai_trace(
+            target=config["trace_target"],
+            out_path=base_trace_path,
+            model=args.model,
+        )
+
     else:
         raise ValueError(f"Unknown proposal mode: {args.proposal_mode}")
 
@@ -368,6 +408,7 @@ def main():
         "target": args.target,
         "mode": "clean" if args.clean else "bug-enabled",
         "proposal_mode": args.proposal_mode,
+        "model": args.model if args.proposal_mode == "openai" else None,
         "max_attempts": args.max_attempts,
         "bug_flag": bug_flag,
         "detected": detected,
