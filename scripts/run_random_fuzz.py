@@ -19,6 +19,9 @@ BUG_CONFIGS = {
     "hidden_alias": "--bug-hidden-alias",
     "ro_write": "--bug-ro-write",
     "session_secret_bypass": "--bug-session-secret-bypass",
+    "failed_auth_does_not_clear_session": "--bug-failed-auth-does-not-clear-session",
+    "boot_lock_session_persist": "--bug-boot-lock-session-persist",
+    "chal_rotate_does_not_clear_session": "--bug-chal-rotate-does-not-clear-session",
 }
 
 
