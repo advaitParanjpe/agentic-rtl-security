@@ -1,24 +1,25 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:17:05`
+- Timestamp: `2026-05-05T18:19:06`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_ro_write.json`
-- Active bug defines: `BUG_RO_WRITE`
-- Simulation exit code: `1`
-- Result: **FAIL**
+- Active bug defines: `None`
+- Simulation exit code: `0`
+- Result: **PASS**
 
 ## Summary
 
-The simulation detected one or more policy violations.
+The simulation completed without detecting a policy violation.
 
 ## Failing Checks
 
-- `[FAIL] WRITE addr=0x1c expected error=1, got 0`
-- `[FAIL] READ addr=0x1c priv=  USER expected rdata=0x00000001 error=0, got rdata=0xffffffff error=0`
+- None
 
 ## Passing Checks
 
 - `[PASS] WRITE addr=0x14 data=0x1234abcd priv=  USER error=0`
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
+- `[PASS] WRITE addr=0x1c data=0xffffffff priv=  USER error=1`
+- `[PASS] READ addr=0x1c priv=  USER rdata=0x00000001 error=0`
 
 ## Raw Simulation Log
 
@@ -34,15 +35,15 @@ Starting mini_soc security testbench
 [TEST] Running generated trace
 
 [TRACE 0] USER attempts to modify read-only VERSION register
-[FAIL] WRITE addr=0x1c expected error=1, got 0
+[PASS] WRITE addr=0x1c data=0xffffffff priv=  USER error=1
 
 [TRACE 1] USER reads VERSION and should see reset value preserved
-[FAIL] READ addr=0x1c priv=  USER expected rdata=0x00000001 error=0, got rdata=0xffffffff error=0
+[PASS] READ addr=0x1c priv=  USER rdata=0x00000001 error=0
 
 ========================================
-Test summary: 4 checks, 2 failures
+Test summary: 4 checks, 0 failures
 ========================================
-RESULT: FAIL
+RESULT: PASS
 /Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 160000 (1ps)
 
 ```

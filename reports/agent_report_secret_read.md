@@ -1,24 +1,25 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:17:05`
+- Timestamp: `2026-05-05T18:19:05`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_secret_read.json`
-- Active bug defines: `BUG_SECRET_READ`
-- Simulation exit code: `1`
-- Result: **FAIL**
+- Active bug defines: `None`
+- Simulation exit code: `0`
+- Result: **PASS**
 
 ## Summary
 
-The simulation detected one or more policy violations.
+The simulation completed without detecting a policy violation.
 
 ## Failing Checks
 
-- `[FAIL] READ addr=0x10 priv=  USER expected rdata=0x00000000 error=1, got rdata=0xdeadbeef error=0`
+- None
 
 ## Passing Checks
 
 - `[PASS] WRITE addr=0x14 data=0x1234abcd priv=  USER error=0`
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
 - `[PASS] WRITE addr=0x10 data=0xdeadbeef priv=SECURE error=0`
+- `[PASS] READ addr=0x10 priv=  USER rdata=0x00000000 error=1`
 
 ## Raw Simulation Log
 
@@ -37,12 +38,12 @@ Starting mini_soc security testbench
 [PASS] WRITE addr=0x10 data=0xdeadbeef priv=SECURE error=0
 
 [TRACE 1] USER attempts to read SECRET_KEY and should be blocked
-[FAIL] READ addr=0x10 priv=  USER expected rdata=0x00000000 error=1, got rdata=0xdeadbeef error=0
+[PASS] READ addr=0x10 priv=  USER rdata=0x00000000 error=1
 
 ========================================
-Test summary: 4 checks, 1 failures
+Test summary: 4 checks, 0 failures
 ========================================
-RESULT: FAIL
+RESULT: PASS
 /Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 160000 (1ps)
 
 ```
