@@ -18,6 +18,7 @@ BUG_CONFIGS = {
     "stale_rdata": "--bug-stale-rdata",
     "hidden_alias": "--bug-hidden-alias",
     "ro_write": "--bug-ro-write",
+    "session_secret_bypass": "--bug-session-secret-bypass",
 }
 
 
