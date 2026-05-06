@@ -115,7 +115,66 @@ MOCK_LLM_TRACES = {
             "expected_error": 1,
             "comment": "USER reads invalid alias address and should not observe hidden debug state"
         }
-    ]
+    ],
+
+    "session_secret_bypass": [
+        {
+            "op": "write",
+            "addr": "0x20",
+            "data": "0x12345678",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE initializes AUTH_CHAL"
+        },
+        {
+            "op": "write",
+            "addr": "0x24",
+            "data": "0xB7910C22",
+            "priv": "user",
+            "expected_error": 0,
+            "comment": "USER writes AUTH_RESP = AUTH_CHAL ^ AUTH_MAGIC to open session"
+        },
+        {
+            "op": "read",
+            "addr": "0x28",
+            "priv": "user",
+            "expected_rdata": "0x00000001",
+            "expected_error": 0,
+            "comment": "USER confirms session is valid"
+        },
+        {
+            "op": "write",
+            "addr": "0x2C",
+            "data": "0xCAFE1234",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE writes PROTECTED_DATA"
+        },
+        {
+            "op": "read",
+            "addr": "0x2C",
+            "priv": "user",
+            "expected_rdata": "0xCAFE1234",
+            "expected_error": 0,
+            "comment": "USER reads PROTECTED_DATA because session is valid"
+        },
+        {
+            "op": "write",
+            "addr": "0x10",
+            "data": "0xDEADBEEF",
+            "priv": "secure",
+            "expected_error": 0,
+            "comment": "SECURE initializes SECRET_KEY"
+        },
+        {
+            "op": "read",
+            "addr": "0x10",
+            "priv": "user",
+            "expected_rdata": "0x00000000",
+            "expected_error": 1,
+            "comment": "USER attempts to read SECRET_KEY despite valid session and should be blocked"
+        }
+    ],
 }
 
 
