@@ -41,14 +41,38 @@ module tb_mini_soc;
   // DUT instance
   // ------------------------------------------------------------
 
-  mini_soc #(
-    .BUG_SECRET_READ      (1'b0),
-    .BUG_STALE_RDATA      (1'b0),
-    .BUG_DEBUG_UNLOCK     (1'b0),
-    .BUG_USER_DEBUG_WRITE (1'b0),
-    .BUG_HIDDEN_ALIAS     (1'b0),
-    .BUG_RO_WRITE         (1'b0)
-  ) dut (
+`ifndef BUG_SECRET_READ
+`define BUG_SECRET_READ 0
+`endif
+
+`ifndef BUG_STALE_RDATA
+`define BUG_STALE_RDATA 0
+`endif
+
+`ifndef BUG_DEBUG_UNLOCK
+`define BUG_DEBUG_UNLOCK 0
+`endif
+
+`ifndef BUG_USER_DEBUG_WRITE
+`define BUG_USER_DEBUG_WRITE 0
+`endif
+
+`ifndef BUG_HIDDEN_ALIAS
+`define BUG_HIDDEN_ALIAS 0
+`endif
+
+`ifndef BUG_RO_WRITE
+`define BUG_RO_WRITE 0
+`endif
+
+mini_soc #(
+.BUG_SECRET_READ      (`BUG_SECRET_READ),
+.BUG_STALE_RDATA      (`BUG_STALE_RDATA),
+.BUG_DEBUG_UNLOCK     (`BUG_DEBUG_UNLOCK),
+.BUG_USER_DEBUG_WRITE (`BUG_USER_DEBUG_WRITE),
+.BUG_HIDDEN_ALIAS     (`BUG_HIDDEN_ALIAS),
+.BUG_RO_WRITE         (`BUG_RO_WRITE)
+    ) dut (
     .clk        (clk),
     .rst_n      (rst_n),
     .read_en    (read_en),
