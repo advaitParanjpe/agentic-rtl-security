@@ -236,6 +236,9 @@ mini_soc #(
     mmio_write(ADDR_PUBLIC_DATA, 32'h1234_ABCD, PRIV_USER, 1'b0);
     mmio_read(ADDR_PUBLIC_DATA, PRIV_USER, 32'h1234_ABCD, 1'b0);
 
+    // Reset again so the generated trace always starts from a clean state.
+    apply_reset();
+
     // ----------------------------------------------------------
     // Test 2: generated trace
     // ----------------------------------------------------------
