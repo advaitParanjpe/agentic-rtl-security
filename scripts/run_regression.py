@@ -37,6 +37,20 @@ TEST_CASES = [
         "expected_exit": 1,
         "description": "BUG_USER_DEBUG_WRITE should allow USER debug enable and fail.",
     },
+        {
+        "name": "clean_debug_unlock_trace",
+        "trace": "traces/debug_unlock_after_boot_lock.json",
+        "bug_flags": [],
+        "expected_exit": 0,
+        "description": "Clean design should block DEBUG_CTRL changes after BOOT_LOCK.",
+    },
+    {
+        "name": "bug_debug_unlock_trace",
+        "trace": "traces/debug_unlock_after_boot_lock.json",
+        "bug_flags": ["--bug-debug-unlock"],
+        "expected_exit": 1,
+        "description": "BUG_DEBUG_UNLOCK should allow DEBUG_CTRL changes after BOOT_LOCK and fail.",
+    },
 ]
 
 
