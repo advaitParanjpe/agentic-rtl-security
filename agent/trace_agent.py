@@ -33,6 +33,10 @@ TARGET_CONFIGS = {
         "bug_flag": "--bug-hidden-alias",
         "trace_target": "hidden_alias",
     },
+    "session_secret_bypass": {
+        "bug_flag": "--bug-session-secret-bypass",
+        "trace_target": "session_secret_bypass",
+    },
 }
 
 
