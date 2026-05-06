@@ -1,0 +1,33 @@
+{
+  "bug": "debug_unlock",
+  "bug_flag": "--bug-debug-unlock",
+  "ops_per_trace": 1000,
+  "seeds_tested": 20,
+  "start_seed": 1,
+  "detected": 20,
+  "missed": 0,
+  "detection_rate_percent": 100.0,
+  "detected_seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "missed_seeds": []
+}

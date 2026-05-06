@@ -4,7 +4,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-
+import json
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILD_DIR = REPO_ROOT / "build"
@@ -114,6 +114,13 @@ def main():
         help="Print the full simulation log for detected cases.",
     )
 
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="Optional JSON output report path.",
+    )
+
     args = parser.parse_args()
 
     BUILD_DIR.mkdir(exist_ok=True)
@@ -170,6 +177,32 @@ def main():
     print(f"Detected seeds:   {detected_seeds}")
     print(f"Missed seeds:     {missed_seeds}")
     print("=" * 80)
+
+    report = {
+        "bug": args.bug,
+        "bug_flag": bug_flag,
+        "ops_per_trace": args.ops,
+        "seeds_tested": total,
+        "start_seed": args.start_seed,
+        "detected": found,
+        "missed": missed,
+        "detection_rate_percent": rate,
+        "detected_seeds": detected_seeds,
+        "missed_seeds": missed_seeds,
+    }
+
+    if args.out is not None:
+        out_path = args.out
+
+        if not out_path.is_absolute():
+            out_path = REPO_ROOT / out_path
+
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with out_path.open("w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
+
+        print(f"[DONE] Wrote fuzz report to {out_path}")
 
     # This script succeeds as long as the fuzz experiment ran.
     # It does not fail just because some seeds missed the bug.

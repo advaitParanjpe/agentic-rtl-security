@@ -1,0 +1,34 @@
+{
+  "bug": "user_debug_write",
+  "bug_flag": "--bug-user-debug-write",
+  "ops_per_trace": 50,
+  "seeds_tested": 20,
+  "start_seed": 1,
+  "detected": 12,
+  "missed": 8,
+  "detection_rate_percent": 60.0,
+  "detected_seeds": [
+    2,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    12,
+    13,
+    15,
+    17,
+    18
+  ],
+  "missed_seeds": [
+    1,
+    3,
+    10,
+    11,
+    14,
+    16,
+    19,
+    20
+  ]
+}
