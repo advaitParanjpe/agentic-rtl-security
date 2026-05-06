@@ -83,6 +83,22 @@ def generate_base_policy_trace(target, out_path):
         quiet=True,
     )
 
+def generate_mock_llm_trace(target, out_path):
+    prompt_out = BUILD_DIR / f"mock_llm_prompt_{target}.md"
+
+    run_cmd(
+        [
+            sys.executable,
+            str(REPO_ROOT / "agent" / "llm_trace_proposer.py"),
+            "--target",
+            target,
+            "--out",
+            str(out_path),
+            "--prompt-out",
+            str(prompt_out),
+        ],
+        quiet=True,
+    )
 
 def mutate_trace(base_trace, attempt):
     """
@@ -210,6 +226,13 @@ def main():
         help="Print full simulation output for each attempt.",
     )
 
+    parser.add_argument(
+        "--proposal-mode",
+        choices=["policy", "mock-llm"],
+        default="policy",
+        help="Trace proposal backend to use.",
+    )
+
     args = parser.parse_args()
 
     config = TARGET_CONFIGS[args.target]
@@ -226,13 +249,22 @@ def main():
     print(f"Mode:          {'clean' if args.clean else 'bug-enabled'}")
     print(f"Max attempts:  {args.max_attempts}")
     print(f"Bug flag:      {bug_flag if bug_flag else 'None'}")
+    print(f"Proposal mode: {args.proposal_mode}")
     print("=" * 80)
 
-    # Step 1: generate the base policy trace.
-    generate_base_policy_trace(
-        target=config["trace_target"],
-        out_path=base_trace_path,
-    )
+    # Step 1: generate the base candidate trace.
+    if args.proposal_mode == "policy":
+        generate_base_policy_trace(
+            target=config["trace_target"],
+            out_path=base_trace_path,
+        )
+    elif args.proposal_mode == "mock-llm":
+        generate_mock_llm_trace(
+            target=config["trace_target"],
+            out_path=base_trace_path,
+        )
+    else:
+        raise ValueError(f"Unknown proposal mode: {args.proposal_mode}")
 
     base_trace = load_json(base_trace_path)
 
@@ -299,6 +331,7 @@ def main():
     summary = {
         "target": args.target,
         "mode": "clean" if args.clean else "bug-enabled",
+        "proposal_mode": args.proposal_mode,
         "max_attempts": args.max_attempts,
         "bug_flag": bug_flag,
         "detected": detected,
