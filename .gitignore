@@ -19,3 +19,6 @@ venv/
 # Editor files
 .vscode/
 .idea/
+
+# Traces
+traces/random_trace.json
