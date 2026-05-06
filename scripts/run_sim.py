@@ -31,6 +31,7 @@ BUG_DEFINES = {
     "bug_ro_write": "BUG_RO_WRITE",
     "bug_session_secret_bypass": "BUG_SESSION_SECRET_BYPASS",
     "bug_failed_auth_does_not_clear_session": "BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION",
+    "bug_boot_lock_session_persist": "BUG_BOOT_LOCK_SESSION_PERSIST",
 }
 
 
@@ -119,6 +120,12 @@ def parse_args():
         "--bug-failed-auth-does-not-clear-session",
         action="store_true",
         help="Enable BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION.",
+    )
+
+    parser.add_argument(
+        "--bug-boot-lock-session-persist",
+        action="store_true",
+        help="Enable BUG_BOOT_LOCK_SESSION_PERSIST.",
     )
 
     return parser.parse_args()

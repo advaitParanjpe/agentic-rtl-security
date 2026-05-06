@@ -10,8 +10,9 @@ module mini_soc #(
   parameter bit BUG_USER_DEBUG_WRITE                  = 1'b0,
   parameter bit BUG_HIDDEN_ALIAS                      = 1'b0,
   parameter bit BUG_RO_WRITE                          = 1'b0,
-  parameter bit BUG_SESSION_SECRET_BYPASS             = 1'b0,
-  parameter bit BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION = 1'b0
+  parameter bit BUG_SESSION_SECRET_BYPASS              = 1'b0,
+  parameter bit BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION = 1'b0,
+  parameter bit BUG_BOOT_LOCK_SESSION_PERSIST          = 1'b0
 )(
   input  logic                         clk,
   input  logic                         rst_n,
@@ -125,12 +126,18 @@ module mini_soc #(
 
             ADDR_BOOT_LOCK: begin
               // Only secure mode can write boot lock.
-              // Setting BOOT_LOCK[0] clears any active authenticated session.
+              // Clean behavior: setting BOOT_LOCK[0] clears any active session.
+              // BUG_BOOT_LOCK_SESSION_PERSIST incorrectly leaves the session
+              // active after boot lock is set.
               if (priv == PRIV_SECURE) begin
                 boot_lock_q <= wdata;
 
                 if (wdata[0]) begin
-                  session_status_q <= ZERO_DATA;
+                  if (BUG_BOOT_LOCK_SESSION_PERSIST) begin
+                    session_status_q <= session_status_q;
+                  end else begin
+                    session_status_q <= ZERO_DATA;
+                  end
                 end
 
                 error <= 1'b0;
