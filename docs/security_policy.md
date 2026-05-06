@@ -35,6 +35,8 @@ USER mode must never observe the value stored in `SECRET_KEY`.
 
 A USER read from `SECRET_KEY` must return `0x00000000` and assert `error`.
 
+This remains true even if USER has a valid authenticated session.
+
 ### SP2: Secret key write protection
 
 USER mode must never modify `SECRET_KEY`.
@@ -52,6 +54,7 @@ A SECURE read from `SECRET_KEY` must return `0x00000000` and assert `error`.
 Any denied read must return `0x00000000`.
 
 Denied reads must not return:
+
 - the previous successful read value
 - the previous write data
 - any secret value
@@ -83,10 +86,92 @@ Writes to invalid or unaligned addresses must assert `error` and must not modify
 
 ### SP9: Read-only registers cannot be modified
 
-Writes to `STATUS` or `VERSION` must assert `error` and leave the register unchanged.
+Writes to `STATUS`, `VERSION`, or `SESSION_STATUS` must assert `error` and leave the register unchanged.
 
 ### SP10: Clean design must satisfy all policies
 
 With all bug parameters disabled, the RTL must satisfy every security rule above.
 
-With individual bug parameters enabled, the testbench/fuzzer/agent should be able to generate traces that violate at least one corresponding security rule.
+With individual bug parameters enabled, the testbench, fuzzer, or agent should be able to generate traces that violate at least one corresponding security rule.
+
+### SP11: Session unlock grants limited access only
+
+The mini SoC includes a simple authenticated session mechanism.
+
+The session mechanism uses:
+
+| Register | Purpose |
+|---|---|
+| `AUTH_CHAL` | Stores a 32-bit authentication challenge |
+| `AUTH_RESP` | Accepts a 32-bit authentication response |
+| `SESSION_STATUS` | Indicates whether a session is valid |
+| `PROTECTED_DATA` | Data that USER may read only during a valid session |
+
+A session becomes valid only when software writes:
+
+```text
+AUTH_RESP = AUTH_CHAL ^ 0xA5A55A5A
+```
+
+When the response is correct, `SESSION_STATUS[0]` becomes `1`.
+
+When the response is incorrect, `SESSION_STATUS[0]` becomes `0`.
+
+USER mode may read `PROTECTED_DATA` only when `SESSION_STATUS[0] == 1`.
+
+USER mode must not write `PROTECTED_DATA`.
+
+SECURE mode may read and write `PROTECTED_DATA`.
+
+USER mode must never read `SECRET_KEY`, even when `SESSION_STATUS[0] == 1`.
+
+Setting `BOOT_LOCK[0] = 1` must clear `SESSION_STATUS[0]`.
+
+### SP12: Authentication challenge access
+
+SECURE mode may write `AUTH_CHAL`.
+
+USER mode may read `AUTH_CHAL`.
+
+USER mode must not write `AUTH_CHAL`.
+
+### SP13: Authentication response access
+
+USER mode and SECURE mode may write `AUTH_RESP`.
+
+`AUTH_RESP` is write-only.
+
+Reads from `AUTH_RESP` must return `0x00000000` and assert `error`.
+
+## Current Seeded Bug Targets
+
+The currently planned or implemented bug classes are:
+
+| Bug Parameter | Violated Policy |
+|---|---|
+| `BUG_SECRET_READ` | SP1, SP3 |
+| `BUG_STALE_RDATA` | SP4 |
+| `BUG_DEBUG_UNLOCK` | SP5 |
+| `BUG_USER_DEBUG_WRITE` | SP6 |
+| `BUG_HIDDEN_ALIAS` | SP7, SP8 |
+| `BUG_RO_WRITE` | SP9 |
+| `BUG_SESSION_SECRET_BYPASS` | SP1, SP11 |
+
+## Harder Session Bypass Scenario
+
+The harder target bug is `BUG_SESSION_SECRET_BYPASS`.
+
+The intended clean behavior is:
+
+1. SECURE initializes `AUTH_CHAL`.
+2. USER writes the correct `AUTH_RESP`.
+3. `SESSION_STATUS[0]` becomes `1`.
+4. USER may now read `PROTECTED_DATA`.
+5. USER still must not read `SECRET_KEY`.
+
+The buggy behavior is:
+
+1. USER opens a valid session.
+2. USER reads `SECRET_KEY`.
+3. RTL incorrectly treats `SESSION_STATUS[0] == 1` as permission to read `SECRET_KEY`.
+4. `SECRET_KEY` leaks.

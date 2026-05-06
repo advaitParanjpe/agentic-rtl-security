@@ -23,33 +23,42 @@ package soc_pkg;
   // Register addresses
   // ------------------------------------------------------------
 
-  localparam logic [ADDR_W-1:0] ADDR_STATUS     = 8'h00;
-  localparam logic [ADDR_W-1:0] ADDR_CONFIG     = 8'h04;
-  localparam logic [ADDR_W-1:0] ADDR_BOOT_LOCK  = 8'h08;
-  localparam logic [ADDR_W-1:0] ADDR_DEBUG_CTRL = 8'h0C;
-  localparam logic [ADDR_W-1:0] ADDR_SECRET_KEY = 8'h10;
-  localparam logic [ADDR_W-1:0] ADDR_PUBLIC_DATA = 8'h14;
-  localparam logic [ADDR_W-1:0] ADDR_HIDDEN_DBG = 8'h18;
-  localparam logic [ADDR_W-1:0] ADDR_VERSION    = 8'h1C;
+  localparam logic [ADDR_W-1:0] ADDR_STATUS         = 8'h00;
+  localparam logic [ADDR_W-1:0] ADDR_CONFIG         = 8'h04;
+  localparam logic [ADDR_W-1:0] ADDR_BOOT_LOCK      = 8'h08;
+  localparam logic [ADDR_W-1:0] ADDR_DEBUG_CTRL     = 8'h0C;
+  localparam logic [ADDR_W-1:0] ADDR_SECRET_KEY     = 8'h10;
+  localparam logic [ADDR_W-1:0] ADDR_PUBLIC_DATA    = 8'h14;
+  localparam logic [ADDR_W-1:0] ADDR_HIDDEN_DBG     = 8'h18;
+  localparam logic [ADDR_W-1:0] ADDR_VERSION        = 8'h1C;
+  localparam logic [ADDR_W-1:0] ADDR_AUTH_CHAL      = 8'h20;
+  localparam logic [ADDR_W-1:0] ADDR_AUTH_RESP      = 8'h24;
+  localparam logic [ADDR_W-1:0] ADDR_SESSION_STATUS = 8'h28;
+  localparam logic [ADDR_W-1:0] ADDR_PROTECTED_DATA = 8'h2C;
 
   // ------------------------------------------------------------
   // Reset values
   // ------------------------------------------------------------
 
-  localparam logic [DATA_W-1:0] RESET_STATUS      = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_CONFIG      = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_BOOT_LOCK   = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_DEBUG_CTRL  = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_SECRET_KEY  = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_PUBLIC_DATA = 32'h0000_0000;
-  localparam logic [DATA_W-1:0] RESET_HIDDEN_DBG  = 32'hCAFE_BABE;
-  localparam logic [DATA_W-1:0] RESET_VERSION     = 32'h0000_0001;
+  localparam logic [DATA_W-1:0] RESET_STATUS         = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_CONFIG         = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_BOOT_LOCK      = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_DEBUG_CTRL     = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_SECRET_KEY     = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_PUBLIC_DATA    = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_HIDDEN_DBG     = 32'hCAFE_BABE;
+  localparam logic [DATA_W-1:0] RESET_VERSION        = 32'h0000_0001;
+  localparam logic [DATA_W-1:0] RESET_AUTH_CHAL      = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_AUTH_RESP      = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_SESSION_STATUS = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] RESET_PROTECTED_DATA = 32'hBEEF_1234;
 
   // ------------------------------------------------------------
   // Useful constants
   // ------------------------------------------------------------
 
   localparam logic [DATA_W-1:0] ZERO_DATA = 32'h0000_0000;
+  localparam logic [DATA_W-1:0] AUTH_MAGIC = 32'hA5A5_5A5A;
 
 endpackage
 
