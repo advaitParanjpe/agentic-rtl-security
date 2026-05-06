@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -17,13 +19,13 @@ TARGETS = [
     "hidden_alias",
 ]
 
-PROPOSAL_MODES = [
+DEFAULT_PROPOSAL_MODES = [
     "policy",
     "mock-llm",
 ]
 
 
-def run_target(target, proposal_mode, clean=False, max_attempts=4):
+def run_target(target, proposal_mode, clean=False, max_attempts=4, model=None):
     cmd = [
         sys.executable,
         str(REPO_ROOT / "agent" / "trace_agent.py"),
@@ -34,6 +36,9 @@ def run_target(target, proposal_mode, clean=False, max_attempts=4):
         "--max-attempts",
         str(max_attempts),
     ]
+
+    if proposal_mode == "openai" and model is not None:
+        cmd += ["--model", model]
 
     if clean:
         cmd.append("--clean")
@@ -49,18 +54,57 @@ def run_target(target, proposal_mode, clean=False, max_attempts=4):
     return result
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run iterative trace-agent regression across proposal modes."
+    )
+
+    parser.add_argument(
+        "--include-openai",
+        action="store_true",
+        help="Include OpenAI proposal mode. Requires OPENAI_API_KEY.",
+    )
+
+    parser.add_argument(
+        "--model",
+        default="gpt-5.4-mini",
+        help="OpenAI model to use when --include-openai is set.",
+    )
+
+    parser.add_argument(
+        "--max-attempts",
+        type=int,
+        default=4,
+        help="Max attempts per target.",
+    )
+
+    return parser.parse_args()
+
+
 def main():
-    max_attempts = 4
+    args = parse_args()
+
+    proposal_modes = list(DEFAULT_PROPOSAL_MODES)
+
+    if args.include_openai:
+        if not os.environ.get("OPENAI_API_KEY"):
+            print("[ERROR] --include-openai requires OPENAI_API_KEY to be set.")
+            sys.exit(1)
+
+        proposal_modes.append("openai")
+
     results = []
 
     print("=" * 80)
     print("ITERATIVE AGENT REGRESSION")
     print("=" * 80)
-    print(f"Max attempts per target: {max_attempts}")
-    print(f"Proposal modes: {', '.join(PROPOSAL_MODES)}")
+    print(f"Max attempts per target: {args.max_attempts}")
+    print(f"Proposal modes: {', '.join(proposal_modes)}")
+    if args.include_openai:
+        print(f"OpenAI model: {args.model}")
     print("=" * 80)
 
-    for proposal_mode in PROPOSAL_MODES:
+    for proposal_mode in proposal_modes:
         print("\n" + "#" * 80)
         print(f"PROPOSAL MODE: {proposal_mode}")
         print("#" * 80)
@@ -71,7 +115,8 @@ def main():
                 target=target,
                 proposal_mode=proposal_mode,
                 clean=False,
-                max_attempts=max_attempts,
+                max_attempts=args.max_attempts,
+                model=args.model,
             )
             bug_ok = bug_result.returncode == 0
 
@@ -83,7 +128,8 @@ def main():
                 target=target,
                 proposal_mode=proposal_mode,
                 clean=True,
-                max_attempts=max_attempts,
+                max_attempts=args.max_attempts,
+                model=args.model,
             )
             clean_ok = clean_result.returncode == 0
 
@@ -119,8 +165,10 @@ def main():
         )
 
     summary = {
-        "max_attempts": max_attempts,
-        "proposal_modes": PROPOSAL_MODES,
+        "max_attempts": args.max_attempts,
+        "proposal_modes": proposal_modes,
+        "include_openai": args.include_openai,
+        "openai_model": args.model if args.include_openai else None,
         "results": results,
         "all_passed": all_ok,
     }

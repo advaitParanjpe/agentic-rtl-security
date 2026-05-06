@@ -1,6 +1,6 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T18:40:33`
+- Timestamp: `2026-05-05T19:58:10`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_secret_read_attempt_4.json`
 - Active bug defines: `None`
 - Simulation exit code: `0`

@@ -2,6 +2,7 @@
   "target": "ro_write",
   "mode": "clean",
   "proposal_mode": "mock-llm",
+  "model": null,
   "max_attempts": 4,
   "bug_flag": null,
   "detected": false,

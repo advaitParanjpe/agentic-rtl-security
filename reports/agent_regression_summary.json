@@ -4,6 +4,8 @@
     "policy",
     "mock-llm"
   ],
+  "include_openai": false,
+  "openai_model": null,
   "results": [
     {
       "proposal_mode": "policy",

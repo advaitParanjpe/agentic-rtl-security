@@ -1,27 +1,25 @@
 # Simulation Vulnerability Report
 
-- Timestamp: `2026-05-05T19:56:35`
+- Timestamp: `2026-05-05T19:58:37`
 - Trace: `/Users/advaitparanjpe/Desktop/agentic-rtl-security/build/agent_trace_debug_unlock_attempt_1.json`
-- Active bug defines: `None`
-- Simulation exit code: `0`
-- Result: **PASS**
+- Active bug defines: `BUG_DEBUG_UNLOCK`
+- Simulation exit code: `1`
+- Result: **FAIL**
 
 ## Summary
 
-The simulation completed without detecting a policy violation.
+The simulation detected one or more policy violations.
 
 ## Failing Checks
 
-- None
+- `[FAIL] WRITE addr=0x0c expected error=1, got 0`
+- `[FAIL] READ addr=0x0c priv=  USER expected rdata=0x00000000 error=0, got rdata=0xa5a5a5a5 error=0`
 
 ## Passing Checks
 
 - `[PASS] WRITE addr=0x14 data=0x1234abcd priv=  USER error=0`
 - `[PASS] READ addr=0x14 priv=  USER rdata=0x1234abcd error=0`
 - `[PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0`
-- `[PASS] WRITE addr=0x0c data=0xa5a5a5a5 priv=SECURE error=1`
-- `[PASS] WRITE addr=0x0c data=0x5a5a5a5a priv=  USER error=1`
-- `[PASS] READ addr=0x0c priv=SECURE rdata=0x00000000 error=0`
 
 ## Raw Simulation Log
 
@@ -36,22 +34,19 @@ Starting mini_soc security testbench
 
 [TEST] Running generated trace
 
-[TRACE 0] Set BOOT_LOCK[0] to 1 from secure mode to establish the condition where later DEBUG_CTRL writes must be blocked.
+[TRACE 0] Set BOOT_LOCK[0]=1 from secure mode; after this, DEBUG_CTRL should be protected from any further modification.
 [PASS] WRITE addr=0x08 data=0x00000001 priv=SECURE error=0
 
-[TRACE 1] Attempt to modify DEBUG_CTRL after boot lock is set; clean behavior must deny the write and leave DEBUG_CTRL unchanged.
-[PASS] WRITE addr=0x0c data=0xa5a5a5a5 priv=SECURE error=1
+[TRACE 1] Attempt to modify DEBUG_CTRL after boot lock is asserted; clean design must reject this write and leave DEBUG_CTRL unchanged.
+[FAIL] WRITE addr=0x0c expected error=1, got 0
 
-[TRACE 2] USER mode must never be able to enable or alter DEBUG_CTRL, so this write should be rejected.
-[PASS] WRITE addr=0x0c data=0x5a5a5a5a priv=  USER error=1
-
-[TRACE 3] Verify that DEBUG_CTRL remains at reset value after the denied writes.
-[PASS] READ addr=0x0c priv=SECURE rdata=0x00000000 error=0
+[TRACE 2] Check whether the denied debug-control write had any side effect; user can read DEBUG_CTRL, and clean design should still show the reset value if the write was blocked.
+[FAIL] READ addr=0x0c priv=  USER expected rdata=0x00000000 error=0, got rdata=0xa5a5a5a5 error=0
 
 ========================================
-Test summary: 6 checks, 0 failures
+Test summary: 5 checks, 2 failures
 ========================================
-RESULT: PASS
-/Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 200000 (1ps)
+RESULT: FAIL
+/Users/advaitparanjpe/Desktop/agentic-rtl-security/tb/tb_mini_soc.sv:264: $finish called at 180000 (1ps)
 
 ```

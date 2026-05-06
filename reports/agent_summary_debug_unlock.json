@@ -1,12 +1,12 @@
 {
   "target": "debug_unlock",
-  "mode": "clean",
+  "mode": "bug-enabled",
   "proposal_mode": "openai",
   "model": "gpt-5.4-mini",
   "max_attempts": 1,
-  "bug_flag": null,
-  "detected": false,
-  "best_report": null,
+  "bug_flag": "--bug-debug-unlock",
+  "detected": true,
+  "best_report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_1.md",
   "attempts": [
     {
       "attempt": 1,
@@ -15,9 +15,9 @@
       "report": "/Users/advaitparanjpe/Desktop/agentic-rtl-security/reports/agent_report_debug_unlock_attempt_1.md",
       "validation_returncode": 0,
       "valid_trace": true,
-      "returncode": 0,
-      "detected": false,
-      "clean_passed": true
+      "returncode": 1,
+      "detected": true,
+      "clean_passed": false
     }
   ]
 }
