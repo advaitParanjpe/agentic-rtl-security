@@ -11,7 +11,6 @@ from openai import OpenAI
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROMPT_PATH = REPO_ROOT / "agent" / "prompts" / "audit_trace_prompt.md"
-REGISTER_MAP_PATH = REPO_ROOT / "docs" / "register_map.md"
 
 
 def extract_json_array(text):
@@ -23,6 +22,7 @@ def extract_json_array(text):
     """
     text = text.strip()
 
+    # Remove Markdown fences if the model accidentally includes them.
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?", "", text).strip()
         text = re.sub(r"```$", "", text).strip()
@@ -30,6 +30,7 @@ def extract_json_array(text):
     if text.startswith("[") and text.endswith("]"):
         return text
 
+    # Fallback: find the first JSON-looking array in the output.
     match = re.search(r"$begin:math:display$\[\\s\\S\]\*$end:math:display$", text)
     if not match:
         raise ValueError("Could not find a JSON array in model output")
@@ -37,10 +38,10 @@ def extract_json_array(text):
     return match.group(0)
 
 
-def render_prompt(audit_brief_path, feedback_path=None):
+def render_prompt(audit_brief_path, register_map_path, feedback_path=None):
     prompt_template = PROMPT_PATH.read_text(encoding="utf-8")
     audit_brief = audit_brief_path.read_text(encoding="utf-8")
-    register_map = REGISTER_MAP_PATH.read_text(encoding="utf-8")
+    register_map = register_map_path.read_text(encoding="utf-8")
 
     if feedback_path is not None:
         feedback = feedback_path.read_text(encoding="utf-8")
@@ -85,6 +86,16 @@ def call_openai(prompt, model):
     return trace, raw_text
 
 
+def resolve_repo_path(path):
+    if path is None:
+        return None
+
+    if not path.is_absolute():
+        return REPO_ROOT / path
+
+    return path
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Limited-knowledge OpenAI audit trace proposer."
@@ -95,6 +106,13 @@ def main():
         type=Path,
         required=True,
         help="Path to limited audit brief markdown file.",
+    )
+
+    parser.add_argument(
+        "--register-map",
+        type=Path,
+        default=REPO_ROOT / "docs" / "register_map.md",
+        help="Register map shown to the LLM.",
     )
 
     parser.add_argument(
@@ -133,28 +151,20 @@ def main():
 
     args = parser.parse_args()
 
-    audit_brief_path = args.audit_brief
-    if not audit_brief_path.is_absolute():
-        audit_brief_path = REPO_ROOT / audit_brief_path
-
-    feedback_path = args.feedback
-    if feedback_path is not None and not feedback_path.is_absolute():
-        feedback_path = REPO_ROOT / feedback_path
-
-    out_path = args.out
-    if not out_path.is_absolute():
-        out_path = REPO_ROOT / out_path
+    audit_brief_path = resolve_repo_path(args.audit_brief)
+    register_map_path = resolve_repo_path(args.register_map)
+    feedback_path = resolve_repo_path(args.feedback)
+    out_path = resolve_repo_path(args.out)
+    prompt_out = resolve_repo_path(args.prompt_out)
+    raw_out = resolve_repo_path(args.raw_out)
 
     prompt = render_prompt(
         audit_brief_path=audit_brief_path,
+        register_map_path=register_map_path,
         feedback_path=feedback_path,
     )
 
-    if args.prompt_out is not None:
-        prompt_out = args.prompt_out
-        if not prompt_out.is_absolute():
-            prompt_out = REPO_ROOT / prompt_out
-
+    if prompt_out is not None:
         prompt_out.parent.mkdir(parents=True, exist_ok=True)
         prompt_out.write_text(prompt, encoding="utf-8")
         print(f"[DONE] Wrote rendered prompt to {prompt_out}")
@@ -165,17 +175,15 @@ def main():
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(trace, f, indent=2)
 
-    if args.raw_out is not None:
-        raw_out = args.raw_out
-        if not raw_out.is_absolute():
-            raw_out = REPO_ROOT / raw_out
-
+    if raw_out is not None:
         raw_out.parent.mkdir(parents=True, exist_ok=True)
         raw_out.write_text(raw_text, encoding="utf-8")
         print(f"[DONE] Wrote raw model output to {raw_out}")
 
     print(f"[DONE] Wrote audit trace to {out_path}")
     print(f"[INFO] model={args.model}")
+    print(f"[INFO] audit_brief={audit_brief_path}")
+    print(f"[INFO] register_map={register_map_path}")
 
 
 if __name__ == "__main__":

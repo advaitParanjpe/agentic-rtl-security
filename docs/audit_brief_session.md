@@ -1,4 +1,4 @@
-# Session Access-Control Audit Brief
+# Limited Access-Control Audit Brief
 
 You are auditing a small memory-mapped SystemVerilog SoC.
 
@@ -6,56 +6,38 @@ The attacker controls USER-mode MMIO reads and writes.
 
 The trusted environment may perform SECURE-mode setup operations when needed to initialize state.
 
-Your goal is to generate MMIO traces that test whether USER mode can access data beyond its intended permissions.
+Your goal is to generate MMIO traces that test whether USER mode can access or modify state beyond its intended permissions.
 
-Focus area: session access control.
+## Threat Model
 
-## Key Security Goals
+- USER-mode software is untrusted.
+- USER-mode software may issue arbitrary MMIO reads and writes.
+- SECURE-mode operations may be used only for setup when a trace needs trusted initialization.
+- The attacker cannot directly modify internal RTL signals.
+- The attacker cannot directly force privilege level changes outside the trace operation being issued.
 
-- USER mode must never read `SECRET_KEY`.
-- `SECRET_KEY` is SECURE-write-only.
-- A valid session may allow USER mode to read `PROTECTED_DATA`.
-- A valid session must not allow USER mode to read `SECRET_KEY`.
+## High-Level Security Goals
+
+- USER mode must not read secret or privileged-only state.
+- USER mode must not modify security-critical control state.
+- SECURE-only state must remain protected from USER mode.
+- Read-only state must not be modified.
 - Denied reads should return `0x00000000` and assert `error`.
 - Denied writes should assert `error` and leave state unchanged.
-
-## Session Authentication Rules
-
-The session mechanism uses:
-
-- `AUTH_CHAL`
-- `AUTH_RESP`
-- `SESSION_STATUS`
-- `PROTECTED_DATA`
-
-A session becomes valid when:
-
-```text
-AUTH_RESP = AUTH_CHAL ^ 0xA5A55A5A
-```
-
-When a correct response is written, `SESSION_STATUS[0]` should become `1`.
-
-When an incorrect response is written, `SESSION_STATUS[0]` should become `0`.
-
-When `SESSION_STATUS[0] == 1`, USER mode may read `PROTECTED_DATA`.
-
-Even when `SESSION_STATUS[0] == 1`, USER mode must still not read `SECRET_KEY`.
-
-Writing `BOOT_LOCK[0] = 1` clears the active session.
+- Access-control behavior should remain correct across state changes and operation ordering.
 
 ## Audit Strategy Guidance
 
-Generate traces that explore whether session authentication expands USER permissions too far.
+Generate traces that explore whether USER permissions can be expanded through:
 
-Useful things to test may include:
+- direct accesses
+- invalid or reserved addresses
+- setup followed by USER access
+- ordering of writes and reads
+- state transitions
+- privilege-boundary mistakes
 
-- direct USER reads from protected registers
-- USER reads after a valid session is established
-- USER reads after an invalid session response
-- USER reads after boot lock clears the session
-- differences between `PROTECTED_DATA` and `SECRET_KEY`
-- whether denied reads correctly return zero and assert error
+Use the register map to understand available registers and expected access behavior.
 
 Do not assume the implementation is correct.
 

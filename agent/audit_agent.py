@@ -46,7 +46,7 @@ def load_json(path):
         return json.load(f)
 
 
-def propose_trace(audit_brief, model, out_path, attempt, feedback_path=None):
+def propose_trace(audit_brief, register_map, model, out_path, attempt, feedback_path=None):
     prompt_out = BUILD_DIR / f"audit_prompt_attempt_{attempt}.md"
     raw_out = BUILD_DIR / f"audit_raw_attempt_{attempt}.txt"
 
@@ -55,6 +55,8 @@ def propose_trace(audit_brief, model, out_path, attempt, feedback_path=None):
         str(REPO_ROOT / "agent" / "audit_trace_proposer.py"),
         "--audit-brief",
         str(audit_brief),
+        "--register-map",
+        str(register_map),
         "--model",
         model,
         "--out",
@@ -155,8 +157,9 @@ def write_no_bug_feedback(feedback_path, attempt, sim_stdout):
     lines.append("Revise the next trace to explore a different or deeper security state.")
     lines.append("")
     lines.append("Suggestions:")
-    lines.append("- Try establishing a valid session before testing restricted reads.")
-    lines.append("- Compare access to PROTECTED_DATA versus SECRET_KEY.")
+    lines.append("- Try a different access-control strategy.")
+    lines.append("- Explore setup followed by USER access.")
+    lines.append("- Compare allowed and denied register accesses.")
     lines.append("- Add observation reads after important state changes.")
     lines.append("- Ensure expected_rdata and expected_error describe clean-design behavior.")
 
@@ -184,7 +187,6 @@ def write_clean_fail_feedback(feedback_path, attempt, sim_stdout):
 
 def write_final_finding(out_path, audit_name, trace_path, sim_report_path, sim_stdout):
     fail_lines = extract_fail_lines(sim_stdout)
-
     trace = load_json(trace_path)
 
     lines = []
@@ -192,7 +194,10 @@ def write_final_finding(out_path, audit_name, trace_path, sim_report_path, sim_s
     lines.append("")
     lines.append("## Summary")
     lines.append("")
-    lines.append("The audit agent generated a trace that exposed a mismatch between expected clean security behavior and the simulated RTL behavior.")
+    lines.append(
+        "The audit agent generated a trace that exposed a mismatch between "
+        "expected clean security behavior and the simulated RTL behavior."
+    )
     lines.append("")
     lines.append("## Failing Checks")
     lines.append("")
@@ -217,13 +222,15 @@ def write_final_finding(out_path, audit_name, trace_path, sim_report_path, sim_s
             data = op.get("data")
             exp_err = op.get("expected_error")
             lines.append(
-                f"{idx + 1}. WRITE addr `{addr}`, data `{data}`, priv `{priv}`, expected_error `{exp_err}` — {comment}"
+                f"{idx + 1}. WRITE addr `{addr}`, data `{data}`, priv `{priv}`, "
+                f"expected_error `{exp_err}` — {comment}"
             )
         elif op_type == "read":
             exp_data = op.get("expected_rdata")
             exp_err = op.get("expected_error")
             lines.append(
-                f"{idx + 1}. READ addr `{addr}`, priv `{priv}`, expected_rdata `{exp_data}`, expected_error `{exp_err}` — {comment}"
+                f"{idx + 1}. READ addr `{addr}`, priv `{priv}`, "
+                f"expected_rdata `{exp_data}`, expected_error `{exp_err}` — {comment}"
             )
         else:
             lines.append(f"{idx + 1}. Unknown operation — {op}")
@@ -235,7 +242,11 @@ def write_final_finding(out_path, audit_name, trace_path, sim_report_path, sim_s
     lines.append("")
     lines.append("## Interpretation")
     lines.append("")
-    lines.append("Review the failing checks above to identify which security property was violated. For access-control bugs, the key evidence is usually a read or write that should have been denied but was accepted by the RTL.")
+    lines.append(
+        "Review the failing checks above to identify which security property was violated. "
+        "For access-control bugs, the key evidence is usually a read or write that should "
+        "have been denied but was accepted by the RTL."
+    )
     lines.append("")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -252,6 +263,13 @@ def parse_args():
         type=Path,
         required=True,
         help="Limited audit brief shown to the LLM.",
+    )
+
+    parser.add_argument(
+        "--register-map",
+        type=Path,
+        default=REPO_ROOT / "docs" / "register_map.md",
+        help="Register map shown to the LLM.",
     )
 
     parser.add_argument(
@@ -304,6 +322,10 @@ def main():
     if not audit_brief.is_absolute():
         audit_brief = REPO_ROOT / audit_brief
 
+    register_map = args.register_map
+    if not register_map.is_absolute():
+        register_map = REPO_ROOT / register_map
+
     bug_flag = None if args.clean else args.bug_flag
 
     print("=" * 80)
@@ -311,6 +333,7 @@ def main():
     print("=" * 80)
     print(f"Audit name:     {args.audit_name}")
     print(f"Audit brief:    {audit_brief}")
+    print(f"Register map:   {register_map}")
     print(f"Mode:           {'clean' if args.clean else 'bug-enabled'}")
     print(f"Bug flag:       {bug_flag if bug_flag else 'None'}")
     print(f"Model:          {args.model}")
@@ -333,6 +356,7 @@ def main():
 
         proposal_result = propose_trace(
             audit_brief=audit_brief,
+            register_map=register_map,
             model=args.model,
             out_path=trace_path,
             attempt=attempt,
@@ -426,9 +450,6 @@ def main():
             if sim_passed:
                 print("[RESULT] Clean design passed this attempt.")
                 attempt_record["clean_passed"] = True
-
-                # In clean mode, keep going only if you want broader audit coverage.
-                # For now, one clean pass is enough to show no false positive for this trace.
                 attempts.append(attempt_record)
                 break
 
@@ -443,21 +464,50 @@ def main():
             break
 
         if sim_failed:
-            print("[RESULT] Vulnerability detected.")
-            detected = True
-            attempt_record["detected"] = True
-            attempts.append(attempt_record)
+            print("[CHECK] Bug-enabled RTL failed. Confirming against clean RTL...")
 
-            final_finding_path = REPORT_DIR / f"audit_{args.audit_name}_finding.md"
-            write_final_finding(
-                out_path=final_finding_path,
-                audit_name=args.audit_name,
-                trace_path=trace_path,
-                sim_report_path=sim_report_path,
-                sim_stdout=sim_result.stdout,
+            clean_confirm_report_path = (
+                REPORT_DIR / f"audit_{args.audit_name}_attempt_{attempt}_clean_confirm.md"
             )
 
-            break
+            clean_confirm_result = run_sim(
+                trace_path=trace_path,
+                report_path=clean_confirm_report_path,
+                bug_flag=None,
+            )
+
+            attempt_record["clean_confirm_returncode"] = clean_confirm_result.returncode
+            attempt_record["clean_confirm_report"] = str(clean_confirm_report_path)
+
+            if clean_confirm_result.returncode == 0:
+                print("[RESULT] Confirmed vulnerability: clean passes, buggy RTL fails.")
+
+                detected = True
+                attempt_record["detected"] = True
+                attempts.append(attempt_record)
+
+                final_finding_path = REPORT_DIR / f"audit_{args.audit_name}_finding.md"
+                write_final_finding(
+                    out_path=final_finding_path,
+                    audit_name=args.audit_name,
+                    trace_path=trace_path,
+                    sim_report_path=sim_report_path,
+                    sim_stdout=sim_result.stdout,
+                )
+
+                break
+
+            print("[RESULT] Trace also fails on clean RTL. Treating as invalid expectation, not a confirmed vulnerability.")
+
+            write_clean_fail_feedback(
+                feedback_path=feedback_path,
+                attempt=attempt,
+                sim_stdout=clean_confirm_result.stdout,
+            )
+
+            attempts.append(attempt_record)
+            previous_feedback_path = feedback_path
+            continue
 
         print("[RESULT] No vulnerability detected on this attempt.")
         write_no_bug_feedback(
@@ -472,6 +522,7 @@ def main():
     summary = {
         "audit_name": args.audit_name,
         "audit_brief": str(audit_brief),
+        "register_map": str(register_map),
         "mode": "clean" if args.clean else "bug-enabled",
         "bug_flag_hidden_from_llm": bug_flag,
         "model": args.model,
