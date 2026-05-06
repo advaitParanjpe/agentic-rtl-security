@@ -12,7 +12,8 @@ module mini_soc #(
   parameter bit BUG_RO_WRITE                          = 1'b0,
   parameter bit BUG_SESSION_SECRET_BYPASS              = 1'b0,
   parameter bit BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION = 1'b0,
-  parameter bit BUG_BOOT_LOCK_SESSION_PERSIST          = 1'b0
+  parameter bit BUG_BOOT_LOCK_SESSION_PERSIST          = 1'b0,
+  parameter bit BUG_CHAL_ROTATE_DOES_NOT_CLEAR_SESSION = 1'b0
 )(
   input  logic                         clk,
   input  logic                         rst_n,
@@ -191,10 +192,20 @@ module mini_soc #(
             end
 
             ADDR_AUTH_CHAL: begin
-              // Only SECURE can initialize the authentication challenge.
+              // Only SECURE can initialize/rotate the authentication challenge.
+              // Clean behavior: rotating AUTH_CHAL clears any active session.
+              // BUG_CHAL_ROTATE_DOES_NOT_CLEAR_SESSION incorrectly keeps the
+              // old session active after challenge rotation.
               if (priv == PRIV_SECURE) begin
                 auth_chal_q <= wdata;
-                error       <= 1'b0;
+
+                if (BUG_CHAL_ROTATE_DOES_NOT_CLEAR_SESSION) begin
+                  session_status_q <= session_status_q;
+                end else begin
+                  session_status_q <= ZERO_DATA;
+                end
+
+                error <= 1'b0;
               end else begin
                 error <= 1'b1;
               end

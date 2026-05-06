@@ -32,6 +32,7 @@ BUG_DEFINES = {
     "bug_session_secret_bypass": "BUG_SESSION_SECRET_BYPASS",
     "bug_failed_auth_does_not_clear_session": "BUG_FAILED_AUTH_DOES_NOT_CLEAR_SESSION",
     "bug_boot_lock_session_persist": "BUG_BOOT_LOCK_SESSION_PERSIST",
+    "bug_chal_rotate_does_not_clear_session": "BUG_CHAL_ROTATE_DOES_NOT_CLEAR_SESSION",
 }
 
 
@@ -126,6 +127,12 @@ def parse_args():
         "--bug-boot-lock-session-persist",
         action="store_true",
         help="Enable BUG_BOOT_LOCK_SESSION_PERSIST.",
+    )
+
+    parser.add_argument(
+        "--bug-chal-rotate-does-not-clear-session",
+        action="store_true",
+        help="Enable BUG_CHAL_ROTATE_DOES_NOT_CLEAR_SESSION.",
     )
 
     return parser.parse_args()
